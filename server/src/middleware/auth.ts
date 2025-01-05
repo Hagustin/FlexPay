@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { User } from '../models/User';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -37,5 +38,27 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
       console.error('Invalid token:', error);
     }
     res.status(403).json({ message: 'Invalid token.' });
+  }
+};
+
+export const checkWalletLock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = (req as any).user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return; // Stop further execution if the user is not found
+    }
+
+    if (user.walletLocked) {
+      res.status(403).json({ message: 'Wallet is locked. Unlock it to perform this action.' });
+      return; // Stop further execution if the wallet is locked
+    }
+
+    next(); // Proceed if wallet is not locked
+  } catch (error) {
+    console.error('Error checking wallet lock:', error);
+    res.status(500).json({ message: 'Failed to check wallet lock status.' });
   }
 };

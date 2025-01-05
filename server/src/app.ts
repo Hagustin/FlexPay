@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import userRoutes from './routes/userRoutes';
+import walletRoutes from './routes/walletRoutes'
 
 const app = express();
 
@@ -13,7 +14,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('FlexPay API is running...');
 });
 
-// USER ROUTES
-app.use('/users', userRoutes); // Add authRoutes here
+//ROUTES
+app.use('/users', userRoutes);
+app.use('/wallet', walletRoutes);
 
 export default app;
