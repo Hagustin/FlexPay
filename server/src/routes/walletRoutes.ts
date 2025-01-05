@@ -3,6 +3,8 @@ import express, { Request, Response } from 'express';
 import { authenticateToken, checkWalletLock } from '../middleware/auth';
 import { User } from '../models/User';
 import { Transaction } from '../models/Transaction';
+import { generateQRCode } from '../utils/qrCode';
+
 
 const router = express.Router();
 
@@ -194,7 +196,25 @@ router.get('/transactions', authenticateToken, async (req: Request, res: Respons
     }
   });
   
-  
-  
+//QR code generation
+router.post('/generate-qr', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user.id;
+    const { amount, description } = req.body;
 
+    if (amount <= 0) {
+      res.status(400).json({ message: 'Amount must be greater than 0' });
+      return;
+    }
+
+    const qrData = { userId, amount, description };
+    const qrCode = await generateQRCode(qrData);
+
+    res.status(200).json({ qrCode }); // Return the QR code as a data URL
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate QR code' });
+  }
+});
+
+  
 export default router;
