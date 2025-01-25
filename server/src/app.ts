@@ -4,8 +4,6 @@ import { ApolloServer } from 'apollo-server-express';
 import jwt from 'jsonwebtoken';
 import typeDefs from './graphql/typeDefs';
 import resolvers from './graphql/resolvers';
-import { authenticateUser } from './middleware/auth';
-import { GraphQLContext } from './types/context';
 
 const app = express();
 
@@ -32,27 +30,25 @@ const server = new ApolloServer({
     if (!token) {
       // Only log missing tokens for protected routes
       if (req.body.operationName && req.body.operationName !== "register" && req.body.operationName !== "login") {
-        console.log("🔴 No token provided in request.");
+        console.log("⚠️ No token provided in request.");
       }
       return { user: null };
     }
 
     try {
       const user = jwt.verify(token, process.env.JWT_SECRET_KEY || "Secret_Key_is_here");
-      console.log("🟢 Authenticated User:", user);
+      console.log("✅ User authenticated:", user);
       return { user };
     } catch (error) {
       if (error instanceof Error) {
-        console.log("🔴 Token verification failed:", error.message);
+        console.log("❌ Token verification failed:", error.message);
       } else {
-        console.log("🔴 Token verification failed with an unknown error.");
+        console.log("❌ Token verification failed with an unknown error.");
       }
       return { user: null };
     }
   },
 });
-
-
 
 async function startServer() {
   await server.start();
