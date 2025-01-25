@@ -13,6 +13,7 @@ const typeDefs = gql`
   type Wallet {
     id: ID!
     balance: Float!
+    currency: String!
     transactions: [Transaction]
   }
 
@@ -41,6 +42,8 @@ const typeDefs = gql`
     transferFunds(senderId: ID!, receiverId: ID!, amount: Float!): Wallet
     lockWallet(userId: ID!): User
     unlockWallet(userId: ID!): User
+    addFundsViaCard(userId: ID!, amount: Float!, currency: String!): Wallet
+    confirmPayment(userId: ID!, paymentIntentId: String!): Wallet
   }
 `;
 
