@@ -21,7 +21,8 @@
     "graphql": "^16.10.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.3",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "stripe": "^17.5.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -31,6 +32,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.10.10",
     "@types/qrcode": "^1.5.5",
+    "@types/stripe": "^8.0.416",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
