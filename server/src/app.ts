@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  introspection: true,  // ✅ Enables GraphQL Playground in Apollo Studio
   context: ({ req }) => {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
@@ -54,7 +55,7 @@ async function startServer() {
   await server.start();
   server.applyMiddleware({ app });
 
-  console.log(`🚀 GraphQL Server ready at http://localhost:3001${server.graphqlPath}`);
+  console.log(`🚀 GraphQL Server ready at https://flexpay-nmt5.onrender.com${server.graphqlPath}`);
 }
 
 startServer();
