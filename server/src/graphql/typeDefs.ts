@@ -9,6 +9,12 @@ const typeDefs = gql`
     walletLocked: Boolean!
     transactions: [Transaction]
   }
+  
+  type PaymentResponse {
+  clientSecret: String!
+  status: String!
+  currency: String!
+}
 
   type Wallet {
     id: ID!
