@@ -41,16 +41,16 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    register(username: String!, email: String!, password: String!): AuthPayload
-    login(email: String!, password: String!): AuthPayload
-    addFunds(userId: ID!, amount: Float!): Wallet
-    withdrawFunds(userId: ID!, amount: Float!): Wallet
-    transferFunds(senderId: ID!, receiverId: ID!, amount: Float!): Wallet
-    lockWallet(userId: ID!): User
-    unlockWallet(userId: ID!): User
-    addFundsViaCard(userId: ID!, amount: Float!, currency: String!): Wallet
-    confirmPayment(userId: ID!, paymentIntentId: String!): Wallet
-  }
+  register(username: String!, email: String!, password: String!): AuthPayload
+  login(email: String!, password: String!): AuthPayload
+  addFunds(userId: ID!, amount: Float!): Wallet
+  withdrawFunds(userId: ID!, amount: Float!): Wallet
+  transferFunds(senderId: ID!, receiverId: ID!, amount: Float!): Wallet
+  lockWallet(userId: ID!): User
+  unlockWallet(userId: ID!): User
+  addFundsViaCard(userId: ID!, amount: Float!, currency: String!): PaymentResponse
+  confirmPayment(userId: ID!, paymentIntentId: String!): Wallet
+}
 `;
 
 export default typeDefs;
