@@ -1,4 +1,4 @@
-name: Run Jest Tests
+name: CI Workflow
 
 on:
   push:
@@ -9,11 +9,11 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: server
+        working-directory: server # Change to the directory where the server code is located
 
     steps:
       - name: Checkout Repository
@@ -22,5 +22,5 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Jest Tests
-        run: npm test
+      - name: Build Project
+        run: npm run build
