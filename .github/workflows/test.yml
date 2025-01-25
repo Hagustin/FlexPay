@@ -1,4 +1,4 @@
-name: Run Backend Tests
+name: Run Jest Tests
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: server  # ✅ Run tests only in server/
+        working-directory: server
 
     steps:
       - name: Checkout Repository
@@ -22,5 +22,5 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Tests
+      - name: Run Jest Tests
         run: npm test
