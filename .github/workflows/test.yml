@@ -1,26 +1,26 @@
-name: Run Tests Before Merge
+name: Run Backend Tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
-      - develop
       - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server  # ✅ Run tests only in server/
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Run tests
+      - name: Run Tests
         run: npm test
