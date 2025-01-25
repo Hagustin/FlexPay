@@ -59,14 +59,16 @@ const resolvers = {
     },
 
     addFundsViaCard: async (_: unknown, { userId, amount, currency }: { userId: string; amount: number; currency: string }) => {
-      if (!allowedCurrencies.includes(currency)) throw new Error("Unsupported currency. Use AUD, USD, or JPY.");
-
       const user = await User.findById(userId);
       if (!user) throw new Error("User not found");
 
       const paymentIntent = await createPaymentIntent(amount, currency);
-
-      return { clientSecret: paymentIntent.client_secret, status: paymentIntent.status, currency: paymentIntent.currency.toUpperCase() };
+      
+      return {
+        clientSecret: paymentIntent.client_secret,
+        status: paymentIntent.status,
+        currency: paymentIntent.currency.toUpperCase(),
+      };
     },
 
     confirmPayment: async (_: unknown, { userId, paymentIntentId }: { userId: string; paymentIntentId: string }) => {
@@ -79,7 +81,11 @@ const resolvers = {
       user.walletBalance += paymentIntent.amount_received / 100;
       await user.save();
 
-      return { id: user._id.toString(), balance: user.walletBalance, currency: paymentIntent.currency.toUpperCase() };
+      return {
+        id: user._id.toString(),
+        balance: user.walletBalance,
+        currency: paymentIntent.currency.toUpperCase(),
+      };
     },
 
     addFunds: async (_: unknown, { userId, amount }: { userId: string; amount: number }, context: GraphQLContext) => {
