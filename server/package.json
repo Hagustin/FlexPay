@@ -1,17 +1,17 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node dist/index.js",
-    "build": "tsc",
-    "dev": "nodemon src/index.ts"
+  "description": "FlexPay Backend - A GraphQL API for digital payments",
+  "main": "dist/index.js",
+  "engines": {
+    "node": "18.x" 
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "scripts": {
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "apollo-server-express": "^3.13.0",
     "bcrypt": "^5.1.1",
