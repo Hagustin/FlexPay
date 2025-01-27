@@ -3,6 +3,7 @@ import { generateToken, checkWalletLock } from "../middleware/auth";
 import { User } from "../models/User";
 import { createPaymentIntent, getPaymentIntent } from "../services/payment";
 import { GraphQLContext } from "../types/context";
+import { v4 as uuidv4 } from "uuid";
 
 const allowedCurrencies = ["AUD", "USD", "JPY"];
 
@@ -141,6 +142,68 @@ const resolvers = {
 
       return { id: sender._id.toString(), balance: sender.walletBalance, transactions: sender.transactions.map(tx => ({ amount: tx.amount, type: tx.type, date: tx.date.toISOString() })) };
     },
+
+    generateQR: async (_: unknown, { userId, amount }: { userId: string; amount: number }, context: GraphQLContext) => {
+      if (!context.user) throw new Error("Unauthorized");
+      await checkWalletLock(userId);
+    
+      const user = await User.findById(userId);
+      if (!user) throw new Error("User not found");
+    
+      if (user.walletBalance < amount) throw new Error("Insufficient funds");
+    
+      // Generate QR Code
+      const qrCode = uuidv4();
+    
+      // Store QR Code in Transactions
+      user.transactions.push({
+        amount,
+        type: "pending",
+        date: new Date(),
+        qrCode,
+      });
+    
+      await user.save();
+    
+      return { code: qrCode, amount, status: "pending" };
+    },
+
+    scanQR: async (_: unknown, { userId, qrCode }: { userId: string; qrCode: string }, context: GraphQLContext) => {
+      if (!context.user) throw new Error("Unauthorized");
+      await checkWalletLock(userId);
+    
+      const receiver = await User.findById(userId);
+      if (!receiver) throw new Error("User not found");
+    
+      // Find sender by matching the QR code in their transactions
+      const sender = await User.findOne({ "transactions.qrCode": qrCode });
+      if (!sender) throw new Error("QR code not found or expired");
+    
+      // Get the transaction details
+      const transactionIndex = sender.transactions.findIndex(tx => tx.qrCode === qrCode);
+      if (transactionIndex === -1) throw new Error("Invalid transaction");
+    
+      const transaction = sender.transactions[transactionIndex];
+    
+      // Ensure receiver has enough balance
+      if (receiver.walletBalance < transaction.amount) throw new Error("Insufficient funds");
+    
+      // Process transaction
+      receiver.walletBalance -= transaction.amount;
+      sender.walletBalance += transaction.amount;
+    
+      receiver.transactions.push({ amount: transaction.amount, type: "debit", date: new Date() });
+      sender.transactions.push({ amount: transaction.amount, type: "credit", date: new Date() });
+    
+      // Mark QR code transaction as completed
+      sender.transactions[transactionIndex].type = "completed";
+    
+      await receiver.save();
+      await sender.save();
+    
+      return { id: receiver._id.toString(), balance: receiver.walletBalance };
+    }
+    ,
 
     lockWallet: async (_: unknown, { userId }: { userId: string }, context: GraphQLContext) => {
       if (!context.user) throw new Error("Unauthorized");
