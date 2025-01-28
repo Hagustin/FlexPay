@@ -11,7 +11,7 @@ const app = express();
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
   : [
-      "http://localhost:5173", // Vite default port {please do not delete }
+      "http://localhost:5173", 
       "http://localhost:3001",
       "https://flexpay-nmt5.onrender.com", // Render deployment
     ];
@@ -32,7 +32,22 @@ app.use(
 
 app.use(express.json());
 
-// ✅ Initialize Apollo Server (need to serve this one first before frontend)
+// ✅ Serve frontend in production
+if (process.env.NODE_ENV === "production" || process.env.LOCAL_BUILD === "true") {
+  const clientBuildPath = path.resolve(__dirname, "../../client/dist");
+  console.log(`✅ Serving frontend from: ${clientBuildPath}`);
+
+  app.use(express.static(clientBuildPath));
+
+  // ✅ Ensure React Router SPA works
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+} else {
+  console.log("🔹 Backend running in API-only mode (not serving frontend)");
+}
+
+// ✅ Initialize Apollo Server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -41,14 +56,13 @@ const server = new ApolloServer({
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
-    if (req.body.operationName === "IntrospectionQuery") return { user: null };
-
     if (!token) return { user: null };
 
     try {
       const user = jwt.verify(token, process.env.JWT_SECRET_KEY || "Secret_Key_is_here");
       return { user };
-    } catch {
+    } catch (error) {
+      console.log (`Token is invalid: ${error}`);
       return { user: null };
     }
   },
