@@ -2,7 +2,7 @@ import React from "react";
 import { useQuery } from "@apollo/client";
 import Navbar from "./navbar";
 import { GET_USER, GET_TRANSACTIONS, GET_WALLET_BALANCE } from "../graphql/queries";
-
+//Dashboard needs some serious work. It's not displaying the data correctly.
 const Dashboard: React.FC = () => {
   const { loading: loadingUser, error: errorUser, data: userData } = useQuery(GET_USER);
   const { loading: loadingTransactions, error: errorTransactions, data: transactionsData } = useQuery(GET_TRANSACTIONS);
