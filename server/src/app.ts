@@ -56,14 +56,13 @@ const server = new ApolloServer({
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
-    if (req.body.operationName === "IntrospectionQuery") return { user: null };
-
     if (!token) return { user: null };
 
     try {
       const user = jwt.verify(token, process.env.JWT_SECRET_KEY || "Secret_Key_is_here");
       return { user };
-    } catch {
+    } catch (error) {
+      console.log (`Token is invalid: ${error}`);
       return { user: null };
     }
   },
