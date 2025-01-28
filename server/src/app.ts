@@ -4,6 +4,7 @@ import { ApolloServer } from 'apollo-server-express';
 import jwt from 'jsonwebtoken';
 import typeDefs from './graphql/typeDefs';
 import resolvers from './graphql/resolvers';
+import path from 'path';
 
 const app = express();
 
@@ -20,9 +21,13 @@ app.use(
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('FlexPay API is running...');
-});
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../client/build"))); // 🔹 Serve React frontend
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../client/build", "index.html"));
+  });
+}
 
 // Initialize Apollo Server with Authentication Context
 const server = new ApolloServer({

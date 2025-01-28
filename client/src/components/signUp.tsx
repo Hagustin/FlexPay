@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { SIGN_UP_USER } from '../graphql/mutations' // TO BE DEFINED IN MUTATIONS FILE
 
@@ -17,7 +17,7 @@ const SignUp = () => {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         try {
-            const { data } = await signUp({ variables: {...formData } });
+            await signUp({ variables: {...formData } });
         } catch (err) {
             console.error('Error signing up:', err);
         }
