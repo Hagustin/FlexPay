@@ -7,7 +7,17 @@ import resolvers from './graphql/resolvers';
 
 const app = express();
 
-app.use(cors());
+const Origins = [
+  "http://localhost:3000", // Local frontend (for development)
+  "https://flexpay-nmt5.onrender.com" // Render deployment (frontend & backend)
+];
+
+app.use(
+  cors({
+    origin: Origins,
+    credentials: true,
+  }));
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -18,7 +28,7 @@ app.get('/', (req, res) => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  introspection: true,  // ✅ Enables GraphQL Playground in Apollo Studio
+  introspection: true,
   context: ({ req }) => {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
@@ -53,8 +63,7 @@ const server = new ApolloServer({
 
 async function startServer() {
   await server.start();
-  server.applyMiddleware({ app });
-
+  server.applyMiddleware({ app, cors: false });
   console.log(`🚀 GraphQL Server ready at https://flexpay-nmt5.onrender.com${server.graphqlPath}`);
 }
 
