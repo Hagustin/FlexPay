@@ -1,52 +1,45 @@
-import { JwtPayload, jwtDecode } from 'jwt-decode';
+import { JwtPayload, jwtDecode } from "jwt-decode";
 
 class AuthService {
   getProfile() {
-  
     const token = this.getToken();
-    if (token) {
-      const decoded = jwtDecode<JwtPayload>(token);
-      return decoded;
+    if (!token) return null;
+
+    try {
+      return jwtDecode<JwtPayload>(token);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
     }
-    return null;
   }
 
   loggedIn() {
- 
     const token = this.getToken();
-    if (!token) {
-      return false;
-    }
-
-    return !this.isTokenExpired(token);
+    return !!token && !this.isTokenExpired(token);
   }
 
   isTokenExpired(token: string) {
     try {
       const decoded: JwtPayload = jwtDecode(token);
-      if (decoded.exp) {
-        return Date.now() >= decoded.exp * 1000;
-      }
-      return false;
+      return decoded.exp ? Date.now() >= decoded.exp * 1000 : false;
     } catch (error) {
-      console.error('Error decoding token', error);
+      console.error("Error decoding token:", error);
       return true;
     }
   }
 
   getToken(): string {
-    // TODO: return the token
-    return localStorage.getItem('id_token') || '';
+    return localStorage.getItem("id_token") || "";
   }
 
-  login(idToken: string) {
-    localStorage.setItem('id_token', idToken);
-    window.location.assign('/dashboard');
+  login(idToken: string, navigate: (path: string) => void) {
+    localStorage.setItem("id_token", idToken);
+    navigate("/dashboard"); // ✅ Uses React Router's navigate instead of full page reload
   }
 
-  logout() {
-    localStorage.removeItem('id_token');
-    window.location.assign('/login');
+  logout(navigate: (path: string) => void) {
+    localStorage.removeItem("id_token");
+    navigate("/login"); // ✅ Uses React Router's navigate
   }
 }
 

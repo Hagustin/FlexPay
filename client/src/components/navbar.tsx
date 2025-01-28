@@ -1,47 +1,46 @@
-import { Link, useNavigate } from 'react-router-dom';
-import AuthService from '../../utils/auth';
-import '../index.css';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AuthService from "../../utils/auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const isLoggedIn = AuthService.loggedIn();
+  const [isLoggedIn, setIsLoggedIn] = useState(AuthService.loggedIn());
+
+  useEffect(() => {
+    const checkAuth = () => {
+      setIsLoggedIn(AuthService.loggedIn());
+    };
+    checkAuth();
+  }, []);
 
   const handleLogout = () => {
     AuthService.logout();
-    navigate('/login');
+    setIsLoggedIn(false);
+    navigate("/login");
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-left">
-        {/*<img src={logo} alt="FlexPay Logo" className="logo-small" /> */} {/* will uncomment once we have a logo */}
-        <span className="text-bold">FlexPay</span>
+    <nav className="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
+      <div className="text-xl font-bold">
+        {/*  Uncomment and replace when logo is available */}
+        {/* <img src={logo} alt="FlexPay Logo" className="h-8 w-auto" /> */}
+        <span>FlexPay</span>
       </div>
 
-      <div className="navbar-right">
+      <div className="space-x-4">
         {isLoggedIn ? (
           <>
-            <Link to="/" className="navbar-link">
-              Home
-            </Link>
-            <Link to="/dashboard" className="navbar-link">
-              Dashboard
-            </Link>
-            <Link to="/wallet" className="navbar-link">
-              Wallet
-            </Link>
-            <Link to="/transactions" className="navbar-link">
-              Transactions
-            </Link>
-            <Link to="/profile" className="navbar-link">
-              Profile
-            </Link>
-            <button onClick={handleLogout} className="navbar-link logout-button">
+            <Link to="/" className="hover:underline">Home</Link>
+            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+            <Link to="/wallet" className="hover:underline">Wallet</Link>
+            <Link to="/transactions" className="hover:underline">Transactions</Link>
+            <Link to="/profile" className="hover:underline">Profile</Link>
+            <button onClick={handleLogout} className="px-3 py-1 bg-red-500 rounded hover:bg-red-700">
               Log Out
             </button>
           </>
         ) : (
-          <Link to="/login" className="navbar-link">
+          <Link to="/login" className="px-3 py-1 bg-green-500 rounded hover:bg-green-700">
             Log In
           </Link>
         )}
