@@ -1,26 +1,43 @@
-name: CI Workflow
+name: Test FlexPay
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-  pull_request:
+  push:
     branches:
       - main
 
 jobs:
-  build:
+  test:
+    name: Run Frontend & Backend Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server # Change to the directory where the server code is located
-
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
 
-      - name: Build Project
-        run: npm run build
+      - name: Install Dependencies (Server)
+        run: |
+          cd server
+          npm install
+
+      - name: Install Dependencies (Client)
+        run: |
+          cd client
+          npm install
+
+      - name: Run Backend Tests
+        run: |
+          cd server
+          npm test
+
+      - name: Run Frontend Tests
+        run: |
+          cd client
+          npm test
