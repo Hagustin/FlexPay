@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-//User interface
+// User interface
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   username: string;
@@ -11,13 +11,14 @@ export interface IUser extends Document {
   walletLocked: boolean;
   transactions: {
     amount: number;
-    type: "credit" | "debit";  // Only "credit" or "debit" allowed
+    type: "credit" | "debit" | "pending" | "completed";  // Added "pending" & "completed" for QR transactions
     date: Date;
+    qrCode?: string;  // REMEMBER HENRY: Added qrCode field
   }[];
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-//User schema
+// User schema
 const UserSchema: Schema<IUser> = new Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
@@ -25,12 +26,13 @@ const UserSchema: Schema<IUser> = new Schema({
   walletBalance: { type: Number, default: 0 },
   walletLocked: { type: Boolean, default: false },
 
-  //Transactions Array
+  // Transactions Array with qrCode field
   transactions: [
     {
       amount: { type: Number, required: true },
-      type: { type: String, enum: ["credit", "debit"], required: true },
+      type: { type: String, enum: ["credit", "debit", "pending", "completed"], required: true },
       date: { type: Date, default: Date.now },
+      qrCode: { type: String, default: null }, // REMEMBER HENRY: Added qrCode field
     },
   ],
 });

@@ -30,6 +30,12 @@ const typeDefs = gql`
     date: String!
   }
 
+  type QRCode {
+    code: String!
+    amount: Float!
+    status: String!
+  }
+
   type AuthPayload {
     user: User
     token: String!
@@ -50,6 +56,8 @@ const typeDefs = gql`
   unlockWallet(userId: ID!): User
   addFundsViaCard(userId: ID!, amount: Float!, currency: String!): PaymentResponse
   confirmPayment(userId: ID!, paymentIntentId: String!): Wallet
+  generateQR(userId: ID!, amount: Float!): QRCode
+  scanQR(userId: ID!, qrCode: String!): Wallet
 }
 `;
 
