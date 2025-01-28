@@ -9,14 +9,14 @@ import path from 'path';
 const app = express();
 
 // ✅ Define allowed origins
-const allowedOrigins = [
-  "http://localhost:5173",  // ✅ Vite default port
-  "http://localhost:3000",  // ✅ React default port
-  "http://localhost:3001",  // ✅ If frontend is running on Express
-  "https://flexpay-nmt5.onrender.com" // ✅ Render deployment
-];
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map(origin => origin.trim())
+  : [
+      "http://localhost:5173", 
+      "http://localhost:3001",
+      "https://flexpay-nmt5.onrender.com" // Render deployment
+    ];
 
-// ✅ Apply CORS settings
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
