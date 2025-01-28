@@ -35,7 +35,7 @@ app.use(express.json());
 
 // ✅ Serve frontend in production
 if (process.env.NODE_ENV === "production" || process.env.LOCAL_BUILD === "true") {
-  const clientBuildPath = path.resolve(__dirname, "../client/dist");
+  const clientBuildPath = path.resolve(__dirname, "../../client/dist");
   console.log(`✅ Serving frontend from: ${clientBuildPath}`);
 
   app.use(express.static(clientBuildPath));
