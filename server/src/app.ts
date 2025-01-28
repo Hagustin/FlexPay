@@ -12,7 +12,7 @@ const app = express();
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
   : [
-      "http://localhost:5173", // ✅ Vite default port
+      "http://localhost:5173", // Vite default port
       "http://localhost:3001",
       "https://flexpay-nmt5.onrender.com", // Render deployment
     ];
@@ -35,7 +35,7 @@ app.use(express.json());
 
 // ✅ Serve frontend in production
 if (process.env.NODE_ENV === "production" || process.env.LOCAL_BUILD === "true") {
-  const clientBuildPath = path.resolve(__dirname, "../../client/dist"); // ✅ Correct relative path
+  const clientBuildPath = path.resolve(__dirname, "../../client/dist");
   console.log(`✅ Serving frontend from: ${clientBuildPath}`);
 
   app.use(express.static(clientBuildPath));
