@@ -7,12 +7,11 @@ import resolvers from "./graphql/resolvers";
 import path from "path";
 
 const app = express();
-
-// ✅ Define allowed origins
+//CORS
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
   : [
-      "http://localhost:5173", // Vite default port
+      "http://localhost:5173", // Vite default port {please do not delete }
       "http://localhost:3001",
       "https://flexpay-nmt5.onrender.com", // Render deployment
     ];
@@ -33,22 +32,7 @@ app.use(
 
 app.use(express.json());
 
-// ✅ Serve frontend in production
-if (process.env.NODE_ENV === "production" || process.env.LOCAL_BUILD === "true") {
-  const clientBuildPath = path.resolve(__dirname, "../../client/dist");
-  console.log(`✅ Serving frontend from: ${clientBuildPath}`);
-
-  app.use(express.static(clientBuildPath));
-
-  // ✅ Ensure React Router SPA works
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(clientBuildPath, "index.html"));
-  });
-} else {
-  console.log("🔹 Backend running in API-only mode (not serving frontend)");
-}
-
-// ✅ Initialize Apollo Server
+// ✅ Initialize Apollo Server (need to serve this one first before frontend)
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -69,6 +53,22 @@ const server = new ApolloServer({
     }
   },
 });
+
+// ✅ Serve frontend in production
+if (process.env.NODE_ENV === "production" || process.env.LOCAL_BUILD === "true") {
+  const clientBuildPath = path.resolve(__dirname, "../../client/dist");
+  console.log(`✅ Serving frontend from: ${clientBuildPath}`);
+
+  app.use(express.static(clientBuildPath));
+
+  // ✅ Ensure React Router SPA works
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+} else {
+  console.log("🔹 Backend running in API-only mode (not serving frontend)");
+}
+
 
 // ✅ Ensure Apollo applies CORS correctly
 async function startServer() {
