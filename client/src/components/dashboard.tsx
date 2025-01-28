@@ -1,26 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@apollo/client';
 import Navbar from './navbar';
+import { GET_USER, GET_TRANSACTIONS, GET_WALLET_BALANCE } from '../graphql/queries';
 
 const Dashboard: React.FC = () => {
-  const [balance, setBalance] = useState<number>(0);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [accountDetails, setAccountDetails] = useState<any>({});
+  const {
+    loading: loadingUser,
+    error: errorUser,
+    data: userData
+  } = useQuery(GET_USER);
 
-  useEffect(() => {
-    setBalance(0); 
-    setTransactions([
-      { id: 1, date: '', amount: '', description: '' }, // user to add transactions here
-      { id: 2, date: '', amount: '', description: '' },
-    ]);
-    setAccountDetails({
-      name: '', // user to add their details here
-      email: '',
-    });
-  }, []);
+  const {
+    loading: loadingTransactions,
+    error: errorTransactions,
+    data: transactionsData
+  } = useQuery(GET_TRANSACTIONS);
+
+  const {
+    loading: loadingBalance,
+    error: errorBalance,
+    data: balanceData
+  } = useQuery(GET_WALLET_BALANCE);
+
+  if (loadingUser || loadingTransactions || loadingBalance) return <p>Loading...</p>;
+  if (errorUser) return <p>Error fetching user data: {errorUser.message}</p>;
+  if (errorTransactions) return <p>Error fetching transactions: {errorTransactions.message}</p>;
+  if (errorBalance) return <p>Error fetching wallet balance: {errorBalance.message}</p>;
+
+  const { accountDetails } = userData;
+  const { transactions } = transactionsData;
+  const { balance } = balanceData;
 
   return (
     <div className="dashboard">
-        <Navbar />
+      <Navbar />
       <h1>Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Wallet Balance */}
@@ -33,7 +46,7 @@ const Dashboard: React.FC = () => {
         <div className="card">
           <h2>Recent Transactions</h2>
           <ul>
-            {transactions.map((txn) => (
+            {transactions.map((txn: any) => (
               <li key={txn.id}>
                 {txn.date}: {txn.description} (${txn.amount})
               </li>
