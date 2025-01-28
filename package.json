@@ -2,14 +2,15 @@
   "name": "flexpay",
   "version": "1.0.0",
   "private": true,
-  "description": "FlexPay Backend - A GraphQL API for digital payments",
-  "main": "dist/index.js",
+  "description": "FlexPay Full-Stack Application",
+  "main": "server/dist/index.js",
   "scripts": {
-    "install": "cd server && npm install",
-    "build": "cd server && npm run build",
-    "start": "cd server && npm start",
-    "test": "cd server && npm test"
-  },
+  "install": "cd server && npm install && cd ../client && npm install",
+  "build": "cd client && npm run build && cd ../server && npm run build",
+  "start": "cd server && npm start",
+  "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+  "test": "cd server && npm test"
+},
   "dependencies": {
     "apollo-server-express": "^3.13.0",
     "bcryptjs": "^2.4.3",
