@@ -9,7 +9,7 @@ const Transactions = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Transaction History</h2>
+      <h2 className="text-2xl font-bold mb-4">SAMPLE ONLY PLEASE CHANGE SHAREEF!</h2>
       <ul className="bg-white shadow-md rounded p-4">
         {data.transactions.map((txn: any) => (
           <li key={txn.id} className="border-b py-2">
