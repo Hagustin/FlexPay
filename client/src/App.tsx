@@ -8,9 +8,7 @@ import SignUp from './pages/SignUp';
 const App: React.FC = () => {
   return (
     <Router>
-      <div>
         <Navbar />
-      </div>
       <div>
         <Routes>
           <Route path="/" element={<Dashboard />} />

@@ -1,31 +1,54 @@
-name: Deploy to Render
+name: Deploy FlexPay
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build:
+    name: Build Frontend & Backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: 'npm'
 
-      - name: Install Dependencies
-        working-directory: server
-        run: npm install
+      - name: Install Dependencies (Server)
+        run: |
+          cd server
+          npm install
 
-      - name: Build Project
-        working-directory: server
-        run: npm run build
+      - name: Install Dependencies (Client)
+        run: |
+          cd client
+          npm install
 
+      - name: Build Frontend
+        run: |
+          cd client
+          npm run build
+
+      - name: Build Backend
+        run: |
+          cd server
+          npm run build
+
+  deploy:
+    name: Deploy to Render
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Trigger Render Deployment
-        run: curl -X POST "$RENDER_DEPLOY_HOOK_URL"
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          curl -X POST $RENDER_DEPLOY_HOOK_URL

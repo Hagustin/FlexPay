@@ -8,6 +8,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "lint": "eslint .",
+    "test": "echo \"No tests configured\" && exit 0",
     "preview": "vite preview"
   },
   "dependencies": {

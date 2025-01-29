@@ -1,6 +1,5 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import Navbar from './navbar';
 import {
   GET_USER,
   GET_TRANSACTIONS,
@@ -41,7 +40,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
       <h1>Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Wallet Balance */}
