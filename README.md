@@ -1,124 +1,162 @@
-# FlexPay - Digital Payment Solution
+# FlexPay
 
-## Overview
-FlexPay is a fintech application designed to modernize transactions in rural areas, islands, and underserved communities. By introducing mobile-based payments, QR codes, and banking integration, FlexPay empowers local businesses and individuals with a seamless digital payment experience.
+FlexPay is a full-stack fintech application designed to modernize digital payments, allowing users to manage transactions, check wallet balances, and facilitate secure payments seamlessly.
 
-## 🚀 Deployment Goal
-FlexPay aims to be **fully deployed on Render by January 30th**. The backend is transitioning to **GraphQL**, ensuring efficient data access and API management, while the frontend is built with **React, TypeScript, and Chakra UI** for a seamless user experience.
-
----
-
-## 📍 Project Timeline
-### **Backend Development**
-✅ **January 24-25 (Today & Tomorrow)**
-- Finalize **GraphQL schema** (types, queries, and mutations)
-- Convert all **existing REST routes** to **GraphQL**
-- Set up **Apollo Server** for seamless integration
-
-✅ **January 26-27 (Weekend)**
-- Test and debug all **GraphQL queries/mutations** in Insomnia/Postman
-- Add **error handling, security checks, and authentication**
-- Deploy **backend to Render** (initial test)
-
-✅ **January 28**
-- Conduct final **backend testing**
-- Provide frontend team with **GraphQL API documentation**
-- Ensure proper **CORS handling** for frontend integration
-
-✅ **January 29**
-- Backend **ready for full integration**
-- Standby for any **last-minute fixes**
-
-✅ **January 30 (Deployment)**
-- Backend **fully deployed on Render**
-- Verify **GraphQL API accessibility** for frontend
+## Table of Contents
+- [Live Demo](#live-demo)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Folder Structure](#folder-structure)
+- [Deployment Instructions](#deployment-instructions)
+- [API Endpoints](#api-endpoints)
+- [Environment Variables](#environment-variables)
+- [Testing](#testing)
+- [License](#license)
+- [Contributors](#contributors)
+- [Future Enhancements](#future-enhancements)
+- [Contact](#contact)
 
 ---
 
-### **Frontend Development**
-✅ **January 24-25 (Today & Tomorrow)**
-- Set up **React + TypeScript + Chakra UI** environment
-- Design **wireframes** for each route
-- Start implementing **Landing Page & Authentication**
-
-✅ **January 26-27 (Weekend)**
-- Implement **Dashboard & Wallet pages**
-- Integrate **GraphQL with Apollo Client**
-- Work on **QR Code Scanner & Generator** UI
-
-✅ **January 28**
-- Connect **frontend to GraphQL backend**
-- Implement **transaction history UI**
-- Ensure **form validation & authentication flow**
-
-✅ **January 29**
-- Complete **styling & responsiveness**
-- Conduct **full frontend testing**
-- Fix **UI bugs & finalize components**
-
-✅ **January 30 (Deployment)**
-- Deploy frontend to **Render**
-- Final integration test with backend
-- **Go Live! 🚀**
+## Live Demo
+**[FlexPay Deployed on Render](https://flexpay-nmt5.onrender.com/)**
 
 ---
 
-## 🛠️ Technologies Used
-- **Frontend**: React, TypeScript, Chakra UI, Apollo Client
-- **Backend**: Node.js, Express.js, GraphQL (Apollo Server), MongoDB (Mongoose)
-- **Authentication**: JWT (JSON Web Tokens)
-- **Payment Integration**: QR Code Payments
-- **Deployment**: Render
-
-## 📌 Features
-- **User Registration & Authentication**
-- **Digital Wallet (Add & Withdraw Funds)**
-- **QR Code Payments & Transfers**
-- **Transaction History Tracking**
-- **GraphQL API for Efficient Data Management**
-
-## 📄 Setup Instructions
-### **Backend**
-1. Clone the repository
-   ```sh
-   git clone <repo-link>
-   cd server
-   npm install
-   npm run dev
-   ```
-2. Ensure **MongoDB** is running locally or provide a cloud connection string.
-3. Create a `.env` file and configure the following:
-   ```sh
-   PORT=3001
-   MONGODB_URI=your_mongodb_uri
-   JWT_SECRET_KEY=your_secret_key
-   ```
-4. Start the backend server:
-   ```sh
-   npm run dev
-   ```
-
-### **Frontend**
-1. Navigate to the `client` directory.
-2. Install dependencies:
-   ```sh
-   npm install
-   ```
-3. Start the development server:
-   ```sh
-   npm run dev
-   ```
-4. Ensure the frontend is properly fetching data from the **GraphQL API**.
-
-## 📢 Contributions
-We welcome contributions! Please follow the Git branching workflow and submit pull requests for review.
+## Features
+- Secure **User Authentication** (JWT)
+- Digital Wallet with **Balance Tracking**
+- **Transaction History** with real-time updates
+- Full **GraphQL API** for frontend-backend communication
+- **Vite + React + TypeScript** for frontend
+- **Apollo Server + MongoDB** for backend
 
 ---
 
-## 📌 Final Notes
-- Keep the **backend fully accessible via GraphQL**.
-- Ensure the **frontend consumes GraphQL efficiently**.
-- Deploy both **backend & frontend to Render by January 30th**.
+## Tech Stack
+### Frontend
+- Vite + React + TypeScript
+- Apollo Client for GraphQL
+- TailwindCSS for styling
+- React Router for navigation
 
-🎉 **Let’s make FlexPay a success!** 🚀
+### Backend
+- Node.js + Express
+- Apollo Server (GraphQL API)
+- MongoDB + Mongoose (Database)
+- JWT Authentication
 
+---
+
+## Folder Structure
+```
+FlexPay
+├── client/  # Frontend (Vite + React)
+│   ├── src/
+│   ├── public/
+│   ├── index.html
+│   └── package.json
+│
+├── server/  # Backend (Express + Apollo Server)
+│   ├── src/
+│   ├── dist/
+│   ├── config/
+│   ├── models/
+│   ├── graphql/
+│   ├── routes/
+│   ├── app.ts
+│   └── package.json
+│
+└── .github/workflows/  # CI/CD workflows
+```
+
+---
+
+## Deployment Instructions
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/Hagustin/FlexPay.git
+cd FlexPay
+```
+
+### 2️⃣ Install Dependencies
+```bash
+npm install
+```
+
+### 3️⃣ Start Development Mode
+```bash
+npm run dev
+```
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3001/graphql`
+
+### 4️⃣ Build for Production
+```bash
+npm run build
+npm start
+```
+- Backend serves the frontend in **production mode**
+
+---
+
+## API Endpoints
+| Endpoint           | Method | Description |
+|-------------------|--------|-------------|
+| `/graphql`       | `POST` | GraphQL API for all requests |
+| `/auth/register` | `POST` | Register a new user |
+| `/auth/login`    | `POST` | Authenticate user & return JWT |
+| `/transactions`  | `GET`  | Fetch transaction history |
+| `/wallet/balance` | `GET`  | Get wallet balance |
+
+---
+
+## Environment Variables (`.env`)
+```env
+NODE_ENV=production
+PORT=3001
+MONGODB_URI=mongodb+srv://your-mongo-url
+JWT_SECRET_KEY=your-secret-key
+```
+
+---
+
+## Testing
+### Run Backend Tests
+```bash
+cd server
+npm test
+```
+
+### Run Frontend Tests
+```bash
+cd client
+npm test
+```
+
+---
+
+## License
+This project is licensed under **MIT License**.
+
+---
+
+## Contributors
+- **Henry Agustin** ([GitHub](https://github.com/Hagustin))
+- **Shareef Evans** ([GitHub](https://github.com/shareefevans))
+- **Lachlan Miles** ([GitHub](https://github.com/lachieMiles))
+
+
+---
+
+## Future Enhancements
+- ✅ **QR Code Transactions**
+- ✅ **Mobile Payment Integration**
+- ✅ **AI-powered Financial Insights**
+
+---
+
+## Contact
+- 📩 **Henry Agustin** - ([LinkedIn](https://www.linkedin.com/in/henry-agustin-40896374/))
+- 📩 **Shareef Evans** - ([LinkedIn](https://www.linkedin.com/in/shareef-evans/))
+- 📩 **Lachlan Miles** - ([LinkedIn](https://www.linkedin.com/in/lachlan-miles-b69269181/))
