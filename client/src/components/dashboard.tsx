@@ -1,6 +1,5 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import Navbar from './navbar';
 import { GET_USER, GET_WALLET_BALANCE } from '../graphql/queries';
 import TransactionHistory from './TransactionHistory'; // Import TransactionHistory
 
