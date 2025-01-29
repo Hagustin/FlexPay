@@ -1,22 +1,23 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import SignIn from "./components/signIn";
-import SignUp from "./components/signUp";
-import Dashboard from "./components/dashboard";
-import Navbar from "./components/navbar";
-import Transactions from "./components/transactions";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './components/navbar';
+import DashboardPage from './pages/Dashboard';
+import LoginPage from './pages/Login';
+import SignUpPage from './pages/SignUp';
 
-function App() {
+const App: React.FC = () => {
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<SignUp />} />
-        <Route path="/login" element={<SignIn />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/transactions" element={<Transactions />} />
-      </Routes>
+        <Navbar />
+      <div>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+        </Routes>
+      </div>
     </Router>
   );
-}
+};
 
 export default App;

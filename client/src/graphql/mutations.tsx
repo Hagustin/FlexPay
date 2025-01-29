@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
 // Register a new user
 export const REGISTER_USER = gql`
@@ -51,7 +51,11 @@ export const WITHDRAW_FUNDS = gql`
 // Transfer funds between users
 export const TRANSFER_FUNDS = gql`
   mutation TransferFunds($senderId: ID!, $receiverId: ID!, $amount: Float!) {
-    transferFunds(senderId: $senderId, receiverId: $receiverId, amount: $amount) {
+    transferFunds(
+      senderId: $senderId
+      receiverId: $receiverId
+      amount: $amount
+    ) {
       id
       balance
     }
@@ -117,6 +121,17 @@ export const CONFIRM_PAYMENT = gql`
       id
       balance
       currency
+    }
+  }
+`;
+
+export const GET_TRANSACTIONS = gql`
+  query GetTransactions($userId: ID!) {
+    getTransactions(userId: $userId) {
+      id
+      amount
+      type
+      date
     }
   }
 `;
