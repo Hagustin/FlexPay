@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/navbar';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
+import DashboardPage from './pages/Dashboard';
+import LoginPage from './pages/Login';
+import SignUpPage from './pages/SignUp';
 
 const App: React.FC = () => {
   return (
@@ -11,9 +11,9 @@ const App: React.FC = () => {
         <Navbar />
       <div>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
         </Routes>
       </div>
     </Router>
