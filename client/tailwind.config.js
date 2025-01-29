@@ -9,6 +9,7 @@ export default {
       outline: {},
       fontSize: {},
       fontFamily: {
+        ivy: ['Ivy Mode', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
         sans: ['Inter', 'sans-serif'],
       },

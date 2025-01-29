@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import AuthService from "../../utils/auth";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthService from '../../utils/auth';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -16,34 +16,55 @@ const Navbar = () => {
   const handleLogout = () => {
     AuthService.logout();
     setIsLoggedIn(false);
-    navigate("/login");
+    navigate('/login');
   };
 
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
-      <div className="text-xl font-bold">
-        {/*  Uncomment and replace when logo is available */}
-        {/* <img src={logo} alt="FlexPay Logo" className="h-8 w-auto" /> */}
-        <span>FlexPay</span>
-      </div>
+    <nav className="flex items-center justify-between px-6 py-8 bg-gray-100 w-full">
+      <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
+        <div className="flex flex-row gap-2.5 items-center text-2xl font-ivy">
+          <img
+            src="public/bread.svg"
+            alt="FlexPay Logo"
+            className="h-10 w-auto"
+          />
+          <span>FLEXY</span>
+        </div>
 
-      <div className="space-x-4">
-        {isLoggedIn ? (
-          <>
-            <Link to="/" className="hover:underline">Home</Link>
-            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
-            <Link to="/wallet" className="hover:underline">Wallet</Link>
-            <Link to="/transactions" className="hover:underline">Transactions</Link>
-            <Link to="/profile" className="hover:underline">Profile</Link>
-            <button onClick={handleLogout} className="px-3 py-1 bg-red-500 rounded hover:bg-red-700">
-              Log Out
-            </button>
-          </>
-        ) : (
-          <Link to="/login" className="px-3 py-1 bg-green-500 rounded hover:bg-green-700">
-            Log In
-          </Link>
-        )}
+        <div className="space-x-4">
+          {isLoggedIn ? (
+            <>
+              <Link to="/" className="hover:underline">
+                Home
+              </Link>
+              <Link to="/dashboard" className="hover:underline">
+                Dashboard
+              </Link>
+              <Link to="/wallet" className="hover:underline">
+                Wallet
+              </Link>
+              <Link to="/transactions" className="hover:underline">
+                Transactions
+              </Link>
+              <Link to="/profile" className="hover:underline">
+                Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1 bg-red-500 rounded hover:bg-red-700"
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
+            >
+              Get Started
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );
