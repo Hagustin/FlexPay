@@ -8,8 +8,8 @@ import SignUpPage from './pages/SignUp';
 const App: React.FC = () => {
   return (
     <Router>
-        <Navbar />
-      <div>
+      <Navbar />
+      <div className="bg-gray-100">
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/login" element={<LoginPage />} />
