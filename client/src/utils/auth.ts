@@ -1,4 +1,4 @@
-import { JwtPayload, jwtDecode } from "jwt-decode";
+import { JwtPayload, jwtDecode } from 'jwt-decode';
 
 class AuthService {
   getProfile() {
@@ -8,7 +8,7 @@ class AuthService {
     try {
       return jwtDecode<JwtPayload>(token);
     } catch (error) {
-      console.error("Error decoding token:", error);
+      console.error('Error decoding token:', error);
       return null;
     }
   }
@@ -23,23 +23,23 @@ class AuthService {
       const decoded: JwtPayload = jwtDecode(token);
       return decoded.exp ? Date.now() >= decoded.exp * 1000 : false;
     } catch (error) {
-      console.error("Error decoding token:", error);
+      console.error('Error decoding token:', error);
       return true;
     }
   }
 
   getToken(): string {
-    return localStorage.getItem("id_token") || "";
+    return localStorage.getItem('id_token') || '';
   }
 
   login(idToken: string, navigate: (path: string) => void) {
-    localStorage.setItem("id_token", idToken);
-    navigate("/dashboard"); // ✅ Uses React Router's navigate instead of full page reload
+    localStorage.setItem('id_token', idToken);
+    navigate('/'); // ✅ Uses React Router's navigate instead of full page reload
   }
 
   logout(navigate: (path: string) => void) {
-    localStorage.removeItem("id_token");
-    navigate("/login"); // ✅ Uses React Router's navigate
+    localStorage.removeItem('id_token');
+    navigate('/login'); // ✅ Uses React Router's navigate
   }
 }
 
