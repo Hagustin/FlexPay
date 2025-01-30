@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthService from '../../utils/auth';
+import breadIcon from '../assets/bread.svg';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -23,11 +24,7 @@ const Navbar = () => {
     <nav className="flex items-center justify-between px-6 py-8 bg-gray-100 w-full">
       <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
         <div className="flex flex-row gap-2.5 items-center text-2xl font-ivy">
-          <img
-            src="public/bread.svg"
-            alt="FlexPay Logo"
-            className="h-10 w-auto"
-          />
+          <img src={breadIcon} alt="FlexPay Logo" className="h-10 w-auto" />
           <span>FLEXY</span>
         </div>
 
