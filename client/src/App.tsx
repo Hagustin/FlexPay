@@ -6,6 +6,8 @@ import LoginPage from './pages/Login';
 import SignUpPage from './pages/SignUp';
 
 const App: React.FC = () => {
+  console.log("VITE_NODE_ENV:", import.meta.env.VITE_NODE_ENV);
+
   return (
     <Router>
       <Navbar />

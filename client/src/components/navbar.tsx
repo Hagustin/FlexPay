@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import AuthService from '../../utils/auth';
+import AuthService from '../utils/auth';
 import breadIcon from '../assets/bread.svg';
 
 const Navbar = () => {
@@ -15,7 +15,7 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    AuthService.logout();
+    AuthService.logout(navigate);
     setIsLoggedIn(false);
     navigate('/login');
   };
