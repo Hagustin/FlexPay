@@ -4,18 +4,28 @@ import { User } from "../models/User";
 import { createPaymentIntent, getPaymentIntent } from "../services/payment";
 import { GraphQLContext } from "../types/context";
 import { v4 as uuidv4 } from "uuid";
+import mongoose from "mongoose"; // ✅ Import Mongoose for ObjectId validation
+
 
 const allowedCurrencies = ["AUD", "USD", "JPY"];
 
 const resolvers = {
   Query: {
-    getUser: async (_: unknown, { id }: { id: string }, context: GraphQLContext) => {
-      if (!context.user) throw new Error("Unauthorized");
-      const user = await User.findById(id).lean();
+    getUser: async (_: unknown, { id }: { id?: string }, context: GraphQLContext) => {
+      const userId = id || context.user?.id; // ✅ Use provided ID or fallback to logged-in user
+      if (!userId) throw new Error("Unauthorized - User ID is required");
+    
+      // ✅ Ensure ID is a valid MongoDB ObjectId before querying
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new Error("Invalid user ID format");
+      }
+    
+      const user = await User.findById(new mongoose.Types.ObjectId(userId)).lean();
       if (!user) throw new Error("User not found");
-
+    
       return { ...user, id: user._id.toString() };
     },
+    
 
     getTransactions: async (_: unknown, { userId, limit = 10, offset = 0 }: { userId: string; limit?: number; offset?: number }, context: GraphQLContext) => {
       if (!context.user) throw new Error("Unauthorized");

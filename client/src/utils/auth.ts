@@ -1,12 +1,17 @@
 import { JwtPayload, jwtDecode } from 'jwt-decode';
 
+interface DecodedToken extends JwtPayload {
+  id: string; // ✅ Explicitly define the expected structure
+}
+
 class AuthService {
-  getProfile() {
+  getProfile(): DecodedToken | null {
     const token = this.getToken();
     if (!token) return null;
 
     try {
-      return jwtDecode<JwtPayload>(token);
+      const decoded = jwtDecode<DecodedToken>(token); // ✅ Use the custom interface
+      return decoded;
     } catch (error) {
       console.error('Error decoding token:', error);
       return null;
