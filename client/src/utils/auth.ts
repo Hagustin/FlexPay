@@ -39,11 +39,13 @@ class AuthService {
 
   login(idToken: string, navigate: (path: string) => void) {
     localStorage.setItem('id_token', idToken);
-    navigate('/'); // ✅ Uses React Router's navigate instead of full page reload
+    window.dispatchEvent(new Event('authChange')); // i added this, apparently this will solve the issue
+    navigate('/');
   }
 
   logout(navigate: (path: string) => void) {
     localStorage.removeItem('id_token');
+    window.dispatchEvent(new Event('authChange')); // i added this, apparently this will solve the issue
     navigate('/login'); // ✅ Uses React Router's navigate
   }
 }
