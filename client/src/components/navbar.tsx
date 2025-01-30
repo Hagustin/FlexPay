@@ -1,23 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import AuthService from '../utils/auth';
-import breadIcon from '../assets/bread.svg';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AuthService from "../utils/auth";
+import breadIcon from "../assets/bread.svg";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(AuthService.loggedIn());
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = () =>
       setIsLoggedIn(AuthService.loggedIn());
+
+    // then this so it will update the state when the user logs in or logs out
+    window.addEventListener("authChange", checkAuth);
+
+    return () => {
+      window.removeEventListener("authChange", checkAuth);
     };
-    checkAuth();
   }, []);
 
   const handleLogout = () => {
     AuthService.logout(navigate);
-    setIsLoggedIn(false);
-    navigate('/login');
   };
 
   return (
