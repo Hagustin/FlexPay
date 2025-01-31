@@ -16,50 +16,18 @@ interface TransactionHistoryProps {
 
 const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId }) => {
   const { loading, error, data } = useQuery(GET_TRANSACTIONS, {
-    variables: { userId },
+    variables: { userId, limit: 10, offset: 0 }, // Pagination parameters
   });
 
   if (loading) return <p>Loading transactions...</p>;
   if (error) return <p>Error fetching transactions: {error.message}</p>;
 
+  // Ensure that data is available and transactions are valid
   const transactions: Transaction[] = data?.getTransactions || [];
 
-  // 👉 Fake transactions to display if there are none linked to the user
-  const fakeTransactions: Transaction[] = [
-    {
-      id: 'fake1',
-      amount: 100.0,
-      type: 'Deposit',
-      date: '2025-01-15',
-    },
-    {
-      id: 'fake2',
-      amount: 50.0,
-      type: 'Withdraw',
-      date: '2025-01-14',
-    },
-    {
-      id: 'fake3',
-      amount: 25.0,
-      type: 'Payment',
-      date: '2025-01-13',
-    },
-    {
-      id: 'fake3',
-      amount: 2054.0,
-      type: 'Payment',
-      date: '2025-01-13',
-    },
-    {
-      id: 'fake2',
-      amount: 50.0,
-      type: 'Withdraw',
-      date: '2025-01-14',
-    },
-  ];
-
-  const displayTransactions =
-    transactions.length > 0 ? transactions : fakeTransactions;
+  if (transactions.length === 0) {
+    return <p>No transactions available.</p>;
+  }
 
   return (
     <>
@@ -73,7 +41,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId }) => {
           </p>
         </div>
         <div>
-          {displayTransactions.map((txn) => (
+          {transactions.map((txn) => (
             <>
               <div
                 key={txn.id}
@@ -81,10 +49,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId }) => {
               >
                 <div className="flex flex-row gap-3.5 items-center">
                   <div className="flex flex-col">
-                    <div
-                      className="flex flex-row
-                     gap-2 items-center"
-                    >
+                    <div className="flex flex-row gap-2 items-center">
                       <div className="h-8 w-8 bg-green-500 rounded-full flex justify-center items-center">
                         <img src={check} />
                       </div>
@@ -101,7 +66,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId }) => {
                   ${txn.amount}
                 </div>
               </div>
-              <div className="w-full border-t-2 border-gray-200 mb-10"></div>
+              <div className="w-full border-t-2 border-gray-200 pb-10"></div>
             </>
           ))}
         </div>
