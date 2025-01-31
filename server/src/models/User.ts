@@ -10,10 +10,11 @@ export interface IUser extends Document {
   walletBalance: number;
   walletLocked: boolean;
   transactions: {
+    [x: string]: any;
     amount: number;
-    type: "credit" | "debit" | "pending" | "completed";  // Added "pending" & "completed" for QR transactions
+    type: 'credit' | 'debit' | 'pending' | 'completed'; // Added "pending" & "completed" for QR transactions
     date: Date;
-    qrCode?: string;  // REMEMBER HENRY: Added qrCode field
+    qrCode?: string; // REMEMBER HENRY: Added qrCode field
   }[];
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -30,7 +31,11 @@ const UserSchema: Schema<IUser> = new Schema({
   transactions: [
     {
       amount: { type: Number, required: true },
-      type: { type: String, enum: ["credit", "debit", "pending", "completed"], required: true },
+      type: {
+        type: String,
+        enum: ['credit', 'debit', 'pending', 'completed'],
+        required: true,
+      },
       date: { type: Date, default: Date.now },
       qrCode: { type: String, default: null }, // REMEMBER HENRY: Added qrCode field
     },
@@ -41,11 +46,11 @@ const UserSchema: Schema<IUser> = new Schema({
 UserSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password')) return next();
 
-  console.log("Hashing password before saving:", this.password);
-  
+  console.log('Hashing password before saving:', this.password);
+
   // Ensure we do NOT hash an already hashed password
-  if (this.password.startsWith("$2a$") || this.password.startsWith("$2b$")) {
-    console.log("Skipping hash - password already hashed.");
+  if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) {
+    console.log('Skipping hash - password already hashed.');
     return next();
   }
 
@@ -58,7 +63,7 @@ UserSchema.pre<IUser>('save', async function (next) {
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
-  console.log("Comparing:", candidatePassword, "with", this.password);
+  console.log('Comparing:', candidatePassword, 'with', this.password);
   return bcrypt.compare(candidatePassword, this.password);
 };
 
