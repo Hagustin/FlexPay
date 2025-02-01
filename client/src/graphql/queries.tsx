@@ -51,3 +51,12 @@ export const GET_ME = gql`
     }
   }
 `;
+
+//chatbot
+export const ASK_CHATBOT = gql`
+  query AskChatbot($question: String!, $userId: String) {
+    askChatbot(question: $question, userId: $userId) {
+      response
+    }
+  }
+`;

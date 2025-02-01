@@ -4,6 +4,7 @@ import Navbar from './components/navbar';
 import DashboardPage from './pages/Dashboard';
 import LoginPage from './pages/Login';
 import SignUpPage from './pages/SignUp';
+import Chatbot from "./components/Chatbot";
 
 const App: React.FC = () => {
   console.log('VITE_NODE_ENV:', import.meta.env.VITE_NODE_ENV);
@@ -18,6 +19,7 @@ const App: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
           </Routes>
+          <Chatbot /> {/* Add gemini bot here */}
         </div>
       </Router>
     </div>
