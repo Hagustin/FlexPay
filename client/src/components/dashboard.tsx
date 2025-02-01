@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_USER } from '../graphql/queries';
 import AuthService from '../utils/auth';
@@ -6,8 +6,10 @@ import bank from '../assets/building-bank.svg';
 import coin from '../assets/coin.svg';
 import wallet from '../assets/wallet.svg';
 import TransactionHistory from './TransactionHistory';
+import QRModal from './QrCodeModal';
 
 const Dashboard: React.FC = () => {
+  const [showQRModal, setShowQRModal] = useState(false);
   const userProfile = AuthService.getProfile();
 
   console.log('🔹 User Profile from AuthService:', userProfile); // Debugging
@@ -65,11 +67,14 @@ const Dashboard: React.FC = () => {
             <img src={bank} />
             Deposit
           </button>
-          <button className="py-5 px-12 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center">
+          <button className="py-5 px-12 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center ">
             <img src={wallet} />
             Withdraw
           </button>
-          <button className="py-5 px-12  bg-green-500 hover:bg-green-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center">
+          <button
+            className="py-5 px-12  bg-green-500 hover:bg-green-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center"
+            onClick={() => setShowQRModal(true)}
+          >
             <img src={coin} />
             Payments
           </button>
@@ -79,6 +84,12 @@ const Dashboard: React.FC = () => {
         <div>
           <TransactionHistory userId={userProfile.id} />
         </div>
+        {showQRModal && (
+          <QRModal
+            userId={userProfile.id}
+            onClose={() => setShowQRModal(false)}
+          />
+        )}
       </div>
     </div>
   );
