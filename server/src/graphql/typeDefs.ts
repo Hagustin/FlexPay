@@ -44,6 +44,11 @@ const typeDefs = gql`
   type Query {
     getUser(id: ID!): User
     getTransactions(userId: ID!, limit: Int, offset: Int): [Transaction]
+    askChatbot(userId: String, question: String!): ChatbotResponse
+  }
+
+  type ChatbotResponse {
+    response: String
   }
 
   type Mutation {

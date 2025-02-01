@@ -2,9 +2,18 @@ import bcrypt from 'bcryptjs';
 import { generateToken, checkWalletLock } from '../middleware/auth';
 import { User } from '../models/User';
 import { createPaymentIntent, getPaymentIntent } from '../services/payment';
+import { IUser } from '../models/User';
 import { GraphQLContext } from '../types/context';
 import { v4 as uuidv4 } from 'uuid';
-import mongoose from 'mongoose'; // ✅ Import Mongoose for ObjectId validation
+import mongoose from 'mongoose';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import dotenv from 'dotenv';
+import FLEXPAY_INSTRUCTIONS from "../config/chatbotInstructions";
+
+dotenv.config();
+
+//AI <let's try!
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 const allowedCurrencies = ['AUD', 'USD', 'JPY'];
 
@@ -15,12 +24,15 @@ const resolvers = {
       { id }: { id?: string },
       context: GraphQLContext
     ) => {
-      const userId = id || context.user?.id; // ✅ Use provided ID or fallback to logged-in user
-      if (!userId) throw new Error('Unauthorized - User ID is required');
+      const userId = id || context.user?.id;
+      if (!userId) {
+        console.log("👤 Guest user detected. Returning null");
+        return null;
+      };
 
       // ✅ Ensure ID is a valid MongoDB ObjectId before querying
       if (!mongoose.Types.ObjectId.isValid(userId)) {
-        throw new Error('Invalid user ID format');
+        throw new Error("Invalid user ID format");
       }
 
       const user = await User.findById(
@@ -54,6 +66,45 @@ const resolvers = {
           date: tx.date.toISOString(),
         }));
     },
+    //new Item all are heavily researched and implemented ; also by the use if the google AI
+    askChatbot: async (_: any, { userId, question }: { userId?: string; question: string }) => {
+      try {
+        console.log(`🔍 Processing Chatbot Query | userId: ${userId || "Guest"}, question: ${question}`);
+    
+        let userContext = "Guest User | No account data available.";
+        
+        // ✅ Only fetch user details if userId is provided
+        if (userId) {
+          console.log("🔍 Fetching balance for userId:", userId);
+    
+          const objectId = new mongoose.Types.ObjectId(userId);
+          const user: IUser | null = await User.findById(objectId).lean();
+    
+          if (!user) {
+            console.error("❌ User not found for ID:", userId);
+            throw new Error("User not found.");
+          }
+    
+          console.log("✅ User found:", user.username, "| Balance (AUD):", user.walletBalance);
+          userContext = `User Info: Username: ${user.username}, Balance: AUD $${user.walletBalance}`;
+        }
+    
+        // ✅ Combine balance info (if available) with AI instructions
+        const fullPrompt = `${FLEXPAY_INSTRUCTIONS}\n\n${userContext}\n\nUser asked: ${question}`;
+        
+        console.log("🔍 Sending message to Google Gemini with FlexPay guidance...");
+    
+        // ✅ Call Gemini AI with contextual data
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const result = await model.generateContent(fullPrompt);
+        const response = result.response.text();
+    
+        return { response };
+      } catch (error) {
+        console.error("❌ Gemini API Error:", error);
+        return { response: "Sorry, an error occurred while processing your request." };
+      }
+    },    
   },
 
   Mutation: {
