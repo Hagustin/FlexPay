@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import {
+  Html5QrcodeScanner,
+  Html5QrcodeScanType,
+  Html5QrcodeSupportedFormats,
+} from 'html5-qrcode';
 import { TRANSFER_FUNDS } from '../graphql/mutations';
 import { GET_WALLET_BALANCE } from '../graphql/queries';
 
@@ -21,30 +25,37 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   const [scanComplete, setScanComplete] = useState(false); // ✅ Prevents double-scanning
 
   // Fetch wallet balance
-  const { data: balanceData, loading: balanceLoading, refetch } = useQuery(GET_WALLET_BALANCE, {
+  const {
+    data: balanceData,
+    loading: balanceLoading,
+    refetch,
+  } = useQuery(GET_WALLET_BALANCE, {
     variables: { id: userId },
   });
 
   // Transfer funds mutation
-  const [transferFunds, { loading: transferLoading, error: transferError }] = useMutation(TRANSFER_FUNDS);
+  const [transferFunds, { loading: transferLoading, error: transferError }] =
+    useMutation(TRANSFER_FUNDS);
 
   // Handle QR scan result
   const handleScan = (data: string | null) => {
     if (data && !scanComplete) {
-      console.log("✅ QR Code Scanned:", data);
+      console.log('✅ QR Code Scanned:', data);
       setScanComplete(true); // ✅ Prevent multiple scans
 
       try {
         const parsedData: QRCodeData = JSON.parse(data);
         if (!parsedData.receiverId || !parsedData.amount) {
-          throw new Error("Invalid QR code format");
+          throw new Error('Invalid QR code format');
         }
         setQrData(parsedData);
         setAmount(parsedData.amount);
-        alert(`✅ Transfer Amount: $${parsedData.amount}\n✅ Status: Completed`);
+        alert(
+          `✅ Transfer Amount: $${parsedData.amount}\n✅ Status: Completed`
+        );
       } catch (error) {
-        console.error("❌ Error parsing QR data:", error);
-        alert("Invalid QR code. Please try again.");
+        console.error('❌ Error parsing QR data:', error);
+        alert('Invalid QR code. Please try again.');
         setScanComplete(false); // ✅ Allow re-scanning after failure
       }
     }
@@ -62,7 +73,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
           },
         })
           .then(() => {
-            alert("✅ Transfer Successful");
+            alert('✅ Transfer Successful');
             onClose(); // Close scanner after success
             refetch(); // ✅ Ensure transaction history updates
           })
@@ -70,15 +81,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
             alert(`❌ Transfer Failed: ${error.message}`);
           });
       } else {
-        alert("⚠️ Insufficient Balance");
+        alert('⚠️ Insufficient Balance');
       }
     } else {
-      alert("❌ Invalid QR data or amount");
+      alert('❌ Invalid QR data or amount');
     }
   };
-  
-
-  
 
   // Set up QR scanner
   useEffect(() => {
@@ -93,20 +101,26 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
       useBarCodeDetectorIfSupported: true, // ✅ Enable native barcode scanning if available
     };
 
-    const html5QrcodeScanner = new Html5QrcodeScanner(scannerId, scannerConfig, false);
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      scannerId,
+      scannerConfig,
+      false
+    );
 
     html5QrcodeScanner.render(
       (decodedText) => {
-        console.log("✅ QR Code Scanned:", decodedText);
+        console.log('✅ QR Code Scanned:', decodedText);
         handleScan(decodedText);
       },
       (errorMessage) => {
-        console.log("❌ QR Scanner Error:", errorMessage);
+        console.log('❌ QR Scanner Error:', errorMessage);
       }
     );
 
     return () => {
-      html5QrcodeScanner.clear().catch((error) => console.error("❌ Error clearing scanner:", error));
+      html5QrcodeScanner
+        .clear()
+        .catch((error) => console.error('❌ Error clearing scanner:', error));
     };
   }, []); // ✅ Ensures scanner initializes only once
 
@@ -116,12 +130,19 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
         <h2 className="text-sm font-medium text-gray-400 tracking-widest">
           Scan QR Code
         </h2>
-        <div id={scannerId} className="w-full h-64 bg-gray-200 flex items-center justify-center" />
+        <div
+          id={scannerId}
+          className="w-full h-64 bg-gray-200 flex items-center justify-center"
+        />
 
         {balanceLoading ? (
-          <p>Loading wallet balance...</p>
+          <p className="text-sm font-medium text-gray-400 tracking-widest">
+            Loading wallet balance...
+          </p>
         ) : (
-          <p>Wallet Balance: ${balanceData?.getUser.walletBalance}</p>
+          <p className="text-sm font-medium text-gray-400 tracking-widest">
+            Wallet Balance: ${balanceData?.getUser.walletBalance}
+          </p>
         )}
 
         <button
@@ -129,11 +150,13 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
           disabled={!qrData || scanComplete}
           className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
         >
-          {transferLoading ? "Transferring..." : "Transfer Funds"}
+          {transferLoading ? 'Transferring...' : 'Transfer Funds'}
         </button>
 
         {transferLoading && <p>Transferring funds...</p>}
-        {transferError && <p className="text-red-500">{transferError.message}</p>}
+        {transferError && (
+          <p className="text-red-500">{transferError.message}</p>
+        )}
 
         <button
           onClick={onClose}

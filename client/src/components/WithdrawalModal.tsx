@@ -5,6 +5,7 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string;
+  userId: string;
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
@@ -18,10 +19,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           Withdraw Funds
         </p>
         <p className=" text-3xl sm:text-4xl font-medium text-black font-ivy tracking-widest ">
-          $0.00
-          <span className="font-inter text-base font-medium tracking-widest">
-            AVAILABLE
-          </span>
+          Enter Amount
         </p>
 
         {/* Close Button */}

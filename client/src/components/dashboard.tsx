@@ -141,6 +141,7 @@ const Dashboard: React.FC = () => {
             onClose={() => setShowWithdrawalModal(false)}
             isOpen={showWithdrawalModal}
             children={undefined}
+            userId={userId}
           />
         )}
       </div>
