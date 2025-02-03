@@ -50,16 +50,16 @@ export const WITHDRAW_FUNDS = gql`
 
 // Transfer funds between users
 export const TRANSFER_FUNDS = gql`
-  mutation TransferFunds($senderId: ID!, $receiverId: ID!, $amount: Float!) {
-    transferFunds(
-      senderId: $senderId
-      receiverId: $receiverId
-      amount: $amount
-    ) {
+mutation TransferFunds($senderId: ID!, $receiverId: ID!, $amount: Float!) {
+  transferFunds(senderId: $senderId, receiverId: $receiverId, amount: $amount) {
+    id
+    balance
+    receiver {
       id
       balance
     }
   }
+}
 `;
 
 // Lock a user's wallet
@@ -99,9 +99,11 @@ export const SCAN_QR = gql`
     scanQR(userId: $userId, qrCode: $qrCode) {
       id
       balance
+      transactionStatus
     }
   }
 `;
+
 
 // Add funds via credit/debit card
 export const ADD_FUNDS_VIA_CARD = gql`

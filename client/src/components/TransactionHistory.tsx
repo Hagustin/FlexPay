@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_TRANSACTIONS } from '../graphql/queries';
 import check from '../assets/check.svg';
+import { useState } from 'react';
 
 interface Transaction {
   id: string;
@@ -25,6 +26,15 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId, refetch
     fetchPolicy: "network-only", // ✅ Always get fresh data
   });
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
+
   if (loading) return <p>Loading transactions...</p>;
   if (error) return <p>Error fetching transactions: {error.message}</p>;
 
@@ -41,11 +51,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId, refetch
         <p className="text-sm font-medium text-gray-400 tracking-widest">All Time Transactions</p>
       </div>
       <button
-        onClick={() => refetch()} // ✅ Refresh transaction history
+        onClick={handleRefresh}
         className="py-2 px-4 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm"
+        disabled={isRefreshing}
       >
-        Refresh Transactions
+        {isRefreshing ? "Refreshing..." : "Refresh Transactions"}
       </button>
+
       <div>
         {transactions.map((txn) => (
           <div key={txn.id}>
@@ -83,3 +95,5 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ userId, refetch
 };
 
 export default TransactionHistory;
+
+

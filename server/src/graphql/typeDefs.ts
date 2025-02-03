@@ -24,11 +24,16 @@ const typeDefs = gql`
   }
 
   type Transaction {
-    id: ID!
-    amount: Float!
-    type: String!
-    date: String!
-  }
+  id: ID!
+  amount: Float!
+  type: String!
+  status: String!
+  date: String!
+  senderId: ID
+  receiverId: ID
+  description: String
+}
+
 
   type QRCode {
     code: String!
