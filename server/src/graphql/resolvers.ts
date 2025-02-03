@@ -53,14 +53,16 @@ const resolvers = {
       if (!user) throw new Error("User not found");
     
       return user.transactions
+        .filter((tx) => tx.status === "completed") // ✅ Show only completed transactions
         .sort((a, b) => b.date.getTime() - a.date.getTime())
         .slice(offset, offset + limit)
         .map((tx) => ({
           id: tx._id.toString(),
           amount: tx.amount,
           type: tx.type,
-          status: tx.status,
+          status: "completed", // ✅ Ensure transactions always show as completed
           date: new Date(tx.date).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" }), // ✅ Convert to AEST
+          description: tx.description,
         }));
     },
     
@@ -274,6 +276,8 @@ const resolvers = {
       if (sender.walletBalance < amount) throw new Error("Insufficient balance");
     
       sender.walletBalance -= amount;
+      receiver.walletBalance += amount
+
       sender.transactions.push({
         amount,
         type: "debit",
@@ -345,56 +349,62 @@ const resolvers = {
     ) => {
       if (!context.user) throw new Error('Unauthorized');
       await checkWalletLock(userId);
-
+    
       const payer = await User.findById(userId);
       if (!payer) throw new Error('User (payer) not found');
-
-      // Find the user who generated the QR code (should receive money)
+    
+      // ✅ Find the user who generated the QR code (should receive money)
       const receiver = await User.findOne({ 'transactions.qrCode': qrCode });
       if (!receiver) throw new Error('QR code not found or expired');
-
-      // Locate the transaction
+    
+      // ✅ Locate the original transaction
       const transactionIndex = receiver.transactions.findIndex(tx => tx.qrCode === qrCode);
       if (transactionIndex === -1) throw new Error('Invalid transaction');
-
+    
       const transaction = receiver.transactions[transactionIndex];
-      if (transaction.type !== 'pending') throw new Error('Transaction is not pending');
-
-      // Ensure payer has enough balance
+      if (transaction.status !== 'pending') throw new Error('Transaction already processed');
+    
+      // ✅ Ensure payer has enough balance
       if (payer.walletBalance < transaction.amount)
         throw new Error('Insufficient funds');
-
-      // Process the transaction
+    
+      // ✅ Process transaction & update balances
       payer.walletBalance -= transaction.amount;
       receiver.walletBalance += transaction.amount;
-
+    
+      // ✅ Store new transaction details
+      const transactionDate = new Date();
+    
       payer.transactions.push({
         amount: transaction.amount,
         type: 'debit',
-        date: new Date(),
+        date: transactionDate,
+        status: "completed",
         description: `Sent $${transaction.amount} to ${receiver.username}`
       });
-
+    
       receiver.transactions.push({
         amount: transaction.amount,
         type: 'credit',
-        date: new Date(),
+        date: transactionDate,
+        status: "completed",
         description: `Received $${transaction.amount} from ${payer.username}`
       });
-
-      // Mark the original QR transaction as completed
-      receiver.transactions[transactionIndex].type = 'completed';
+    
+      // ✅ Fix original QR transaction: mark as completed & remove QR code
+      receiver.transactions[transactionIndex].status = "completed";
       receiver.transactions[transactionIndex].qrCode = undefined;
-
+    
       await payer.save();
       await receiver.save();
-
+    
       return {
         id: receiver._id.toString(),
         balance: receiver.walletBalance,
         transactionStatus: 'completed',
       };
     },
+    
     
     lockWallet: async (
       _: unknown,
