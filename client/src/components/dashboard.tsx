@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_USER } from '../graphql/queries';
 import AuthService from '../utils/auth';
@@ -12,17 +12,24 @@ import QRScanner from './QrCodeScanner';
 const Dashboard: React.FC = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
-  const userProfile = AuthService.getProfile();
+  const [userProfile, setUserProfile] = useState(AuthService.getProfile());
 
-  console.log('🔹 User Profile from AuthService:', userProfile); // Debugging
+  console.log('🔹 User Profile from AuthService:', userProfile);
+
+  useEffect(() => {
+    const handleAuthChange = () => setUserProfile(AuthService.getProfile());
+    window.addEventListener('authChange', handleAuthChange);
+    return () => window.removeEventListener('authChange', handleAuthChange);
+  }, []);
 
   if (!userProfile || !userProfile.id) {
     console.error('❌ User is not logged in or ID is missing.');
     return <p>Please log in to view this page.</p>;
   }
 
-  const { loading, error, data } = useQuery(GET_USER, {
-    variables: { id: userProfile.id }, // ✅ Ensure ID is passed correctly
+  const { loading, error, data, refetch } = useQuery(GET_USER, {
+    variables: { id: userProfile.id },
+    fetchPolicy: 'network-only', // ✅ Ensures up-to-date data
   });
 
   if (loading) return <p>Loading...</p>;
@@ -37,10 +44,8 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center flex-col w-full max-w-4xl mx-auto pt-20">
       <div className="flex flex-row w-full justify-between mb-24">
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-gray-400 tracking-widest ">
-            Welcome Back
-          </p>
-          <h1 className=" text-3xl sm:text-4xl font-medium text-black font-ivy tracking-widest ">
+          <p className="text-sm font-medium text-gray-400 tracking-widest">Welcome Back</p>
+          <h1 className="text-3xl sm:text-4xl font-medium text-black font-ivy tracking-widest">
             {username}'s Wallet
           </h1>
         </div>
@@ -54,30 +59,26 @@ const Dashboard: React.FC = () => {
       {/* 👉 Wallet Contents */}
       <div className="w-full flex flex-col gap-14">
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-gray-400 tracking-widest ">
-            Current Balance
-          </p>
-          <p className=" text-5xl sm:text-8xl font-medium text-black font-ivy tracking-widest">
+          <p className="text-sm font-medium text-gray-400 tracking-widest">Current Balance</p>
+          <p className="text-5xl sm:text-8xl font-medium text-black font-ivy tracking-widest">
             ${walletBalance.toFixed(2)}
-            <span className="font-inter text-base font-medium tracking-widest">
-              AUD
-            </span>
+            <span className="font-inter text-base font-medium tracking-widest"> AUD</span>
           </p>
         </div>
         <div className="flex flex-row gap-2.5 flex-wrap">
           <button
-            className="py-5 px-12 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center"
+            className="py-5 px-12 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-inter text-base tracking-wide flex flex-row gap-3.5 items-center"
             onClick={() => setShowQRScanner(true)}
           >
             <img src={bank} />
             Deposit
           </button>
-          <button className="py-5 px-12 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center ">
+          <button className="py-5 px-12 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-inter text-base tracking-wide flex flex-row gap-3.5 items-center">
             <img src={wallet} />
             Withdraw
           </button>
           <button
-            className="py-5 px-12  bg-green-500 hover:bg-green-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center"
+            className="py-5 px-12 bg-green-500 hover:bg-green-600 text-white rounded-full font-inter text-base tracking-wide flex flex-row gap-3.5 items-center"
             onClick={() => setShowQRModal(true)}
           >
             <img src={coin} />
@@ -87,21 +88,10 @@ const Dashboard: React.FC = () => {
         {/* 👉 Divider Line */}
         <div className="w-full border-t-2 border-gray-200"></div>
         <div>
-          <TransactionHistory userId={userProfile.id} />
+          <TransactionHistory userId={userProfile.id} refetch={refetch} />
         </div>
-        {showQRModal && (
-          <QRModal
-            userId={userProfile.id}
-            onClose={() => setShowQRModal(false)}
-          />
-        )}
-
-        {showQRScanner && (
-          <QRScanner
-            onClose={() => setShowQRScanner(false)}
-            userId={userProfile.id}
-          />
-        )}
+        {showQRModal && <QRModal userId={userProfile.id} onClose={() => setShowQRModal(false)} />}
+        {showQRScanner && <QRScanner onClose={() => setShowQRScanner(false)} userId={userProfile.id} />}
       </div>
     </div>
   );
