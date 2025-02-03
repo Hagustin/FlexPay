@@ -5,7 +5,7 @@ import breadIcon from '../assets/bread.svg';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(AuthService.loggedIn());
+  const [isLoggedIn, setIsLoggedIn] = useState(AuthService.isAuthenticated()); // ✅ FIXED
 
   useEffect(() => {
     const checkAuth = () => setIsLoggedIn(AuthService.loggedIn());

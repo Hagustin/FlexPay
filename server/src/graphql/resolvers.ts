@@ -19,29 +19,39 @@ const allowedCurrencies = ['AUD', 'USD', 'JPY'];
 
 const resolvers = {
   Query: {
-    getUser: async (
-      _: unknown,
-      { id }: { id?: string },
-      context: GraphQLContext
-    ) => {
+    getUser: async (_: unknown, { id }: { id?: string }, context: GraphQLContext) => {
       const userId = id || context.user?.id;
       if (!userId) {
         console.log("👤 Guest user detected. Returning null");
         return null;
       };
-
-      // ✅ Ensure ID is a valid MongoDB ObjectId before querying
+    
       if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new Error("Invalid user ID format");
       }
-
-      const user = await User.findById(
-        new mongoose.Types.ObjectId(userId)
-      ).lean();
+    
+      const user = await User.findById(new mongoose.Types.ObjectId(userId))
+        .populate("transactions") // ✅ Ensure transactions are populated
+        .lean();
+    
       if (!user) throw new Error('User not found');
-
-      return { ...user, id: user._id.toString() };
+    
+      return {
+        ...user,
+        id: user._id.toString(),
+        transactions: user.transactions.map((tx) => ({
+          id: tx._id.toString(),
+          amount: tx.amount,
+          type: tx.type,
+          status: tx.status || "completed", // ✅ Ensure status exists
+          date: tx.date.toISOString(),
+          senderId: tx.senderId || null,
+          receiverId: tx.receiverId || null,
+          description: tx.description || "No description",
+        })),
+      };
     },
+    
 
     getTransactions: async (
       _: unknown,
@@ -50,12 +60,12 @@ const resolvers = {
     ) => {
       if (!context.user) throw new Error("Unauthorized");
     
-      console.log(`🔍 Fetching transactions for user: ${userId}`); // ✅ Debug Log
+      console.log(`🔍 Fetching transactions for user: ${userId}`); 
     
       const user = await User.findById(userId);
       if (!user) throw new Error("User not found");
     
-      console.log(`✅ User found: ${user.username}, Transactions:`, user.transactions); // ✅ Debug Transactions
+      console.log(`✅ User found: ${user.username}, Transactions:`, user.transactions); 
     
       return user.transactions
         .sort((a, b) => b.date.getTime() - a.date.getTime())
@@ -64,13 +74,15 @@ const resolvers = {
           id: tx._id.toString(),
           amount: tx.amount,
           type: tx.type,
-          status: tx.status,
-          date: new Date(tx.date).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" }), // ✅ Convert to AEST
-          senderId: tx.senderId,
-          receiverId: tx.receiverId,
+          status: tx.status || "completed", // ✅ Ensure `status` is always defined
+          date: new Date(tx.date).toISOString(), 
+          senderId: tx.senderId || null,
+          receiverId: tx.receiverId || null,
           description: tx.description || "No description",
         }));
     },
+    
+    
     
     
     //new Item all are heavily researched and implemented ; also by the use if the google AI
@@ -346,7 +358,7 @@ const resolvers = {
     
       await user.save();
     
-      return { code: qrCode, amount, status: 'pending' }; // ✅ Show that it's pending
+      return { code: qrCode, amount, status: 'pending' }; 
     },
     
 
@@ -361,45 +373,47 @@ const resolvers = {
       const payer = await User.findById(userId);
       if (!payer) throw new Error("User (payer) not found");
     
-      // Find the user who generated the QR code (should receive money)
-      const receiver = await User.findOne({ 'transactions.qrCode': qrCode });
+      const receiver = await User.findOne({ "transactions.qrCode": qrCode });
       if (!receiver) throw new Error("QR code not found or expired");
     
-      // Locate the transaction
+      // Locate the transaction in receiver's transactions
       const transactionIndex = receiver.transactions.findIndex(tx => tx.qrCode === qrCode);
       if (transactionIndex === -1) throw new Error("Invalid transaction");
     
       const transaction = receiver.transactions[transactionIndex];
-      if (transaction.type !== "pending") throw new Error("Transaction is not pending");
+    
+      if (transaction.status !== "pending") throw new Error("Transaction is not pending");
     
       // Ensure payer has enough balance
-      if (payer.walletBalance < transaction.amount)
-        throw new Error("Insufficient funds");
+      if (payer.walletBalance < transaction.amount) throw new Error("Insufficient funds");
     
-      // ✅ Process the transaction
+      console.log("🔍 BEFORE UPDATE:", transaction);
+    
+      // ✅ Process the transaction (Atomic update)
       payer.walletBalance -= transaction.amount;
       receiver.walletBalance += transaction.amount;
     
-      payer.transactions.push({
-        amount: transaction.amount,
-        type: "debit",
-        status: "completed", // ✅ Mark as completed
-        date: new Date(),
-        description: `Sent $${transaction.amount} to ${receiver.username}`
-      });
-    
-      receiver.transactions.push({
-        amount: transaction.amount,
-        type: "credit",
-        status: "completed", // ✅ Mark as completed
-        date: new Date(),
-        description: `Received $${transaction.amount} from ${payer.username}`
-      });
-    
-      // ✅ Update QR transaction as completed
+      // ✅ Update the existing transaction (instead of duplicating)
       receiver.transactions[transactionIndex].status = "completed";
-      receiver.transactions[transactionIndex].qrCode = undefined; // Remove QR code reference
+      receiver.transactions[transactionIndex].qrCode = undefined; // Remove QR reference
     
+      console.log("🔍 AFTER UPDATE:", receiver.transactions[transactionIndex]);
+    
+      // ✅ Find and update the payer’s existing transaction (instead of pushing a duplicate)
+      const payerTransactionIndex = payer.transactions.findIndex(tx => tx.qrCode === qrCode);
+      if (payerTransactionIndex !== -1) {
+        payer.transactions[payerTransactionIndex].status = "completed";
+      } else {
+        payer.transactions.push({
+          amount: transaction.amount,
+          type: "debit",
+          status: "completed",
+          date: new Date(),
+          description: `Sent $${transaction.amount} to ${receiver.username}`
+        });
+      }
+    
+      // ✅ Save changes to DB
       await payer.save();
       await receiver.save();
     
@@ -411,8 +425,7 @@ const resolvers = {
         transactionStatus: "completed",
       };
     },
-    
-
+         
     
     lockWallet: async (
       _: unknown,

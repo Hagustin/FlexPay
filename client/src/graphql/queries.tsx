@@ -9,6 +9,13 @@ export const GET_USER = gql`
       email
       walletBalance
       walletLocked
+      transactions {
+        id
+        amount
+        type
+        status
+        date
+      }
     }
   }
 `;
@@ -20,6 +27,7 @@ export const GET_TRANSACTIONS = gql`
       id
       amount
       type
+      status
       date
     }
   }
@@ -42,15 +50,18 @@ export const GET_ME = gql`
       username
       email
       walletBalance
+      walletLocked
       transactions {
         id
         amount
         type
+        status
         date
       }
     }
   }
 `;
+
 
 //chatbot
 export const ASK_CHATBOT = gql`

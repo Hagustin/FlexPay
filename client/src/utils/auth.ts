@@ -1,7 +1,7 @@
 import { JwtPayload, jwtDecode } from 'jwt-decode';
 
 interface DecodedToken extends JwtPayload {
-  id: string; // ✅ Explicitly define the expected structure
+  id: string;
 }
 
 class AuthService {
@@ -10,43 +10,51 @@ class AuthService {
     if (!token) return null;
 
     try {
-      const decoded = jwtDecode<DecodedToken>(token); // ✅ Use the custom interface
-      return decoded;
+      return jwtDecode<DecodedToken>(token);
     } catch (error) {
-      console.error('Error decoding token:', error);
+      console.error('❌ Error decoding token:', error);
       return null;
     }
   }
 
-  loggedIn() {
-    const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
+  loggedIn(): boolean { // ✅ Restore `loggedIn()` to prevent Navbar error
+    return this.isAuthenticated();
   }
 
-  isTokenExpired(token: string) {
+  isAuthenticated(): boolean { // ✅ The preferred function
+    const token = this.getToken();
+    return token !== null && !this.isTokenExpired(token);
+  }
+
+  isTokenExpired(token: string): boolean {
     try {
       const decoded: JwtPayload = jwtDecode(token);
       return decoded.exp ? Date.now() >= decoded.exp * 1000 : false;
     } catch (error) {
-      console.error('Error decoding token:', error);
+      console.error('❌ Error decoding token:', error);
       return true;
     }
   }
 
-  getToken(): string {
-    return localStorage.getItem('id_token') || '';
+  getToken(): string | null {
+    return localStorage.getItem('id_token') || null;
   }
 
   login(idToken: string, navigate: (path: string) => void) {
-    localStorage.setItem('id_token', idToken);
-    window.dispatchEvent(new Event('authChange')); // i added this, apparently this will solve the issue
+    const currentToken = this.getToken();
+    if (currentToken !== idToken) {
+      localStorage.setItem('id_token', idToken);
+      window.dispatchEvent(new Event('authChange')); // ✅ Event triggers navbar update
+    }
     navigate('/');
   }
 
   logout(navigate: (path: string) => void) {
-    localStorage.removeItem('id_token');
-    window.dispatchEvent(new Event('authChange')); // i added this, apparently this will solve the issue
-    navigate('/login'); // ✅ Uses React Router's navigate
+    if (this.getToken()) {
+      localStorage.removeItem('id_token');
+      window.dispatchEvent(new Event('authChange')); // ✅ Event triggers navbar update
+    }
+    navigate('/login');
   }
 }
 

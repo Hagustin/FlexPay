@@ -22,14 +22,17 @@ const Dashboard: React.FC = () => {
     return () => window.removeEventListener('authChange', handleAuthChange);
   }, []);
 
-  if (!userProfile || !userProfile.id) {
+  const userId = userProfile?.id || null;
+  
+  if (!userId) {
     console.error('❌ User is not logged in or ID is missing.');
     return <p>Please log in to view this page.</p>;
   }
 
   const { loading, error, data, refetch } = useQuery(GET_USER, {
-    variables: { id: userProfile.id },
-    fetchPolicy: 'network-only', // ✅ Ensures up-to-date data
+    skip: !userId, // ✅ Skips query if userId is missing
+    variables: userId ? { id: userId } : undefined,
+    fetchPolicy: 'network-only', // ✅ Always fetch fresh data
   });
 
   if (loading) return <p>Loading...</p>;
@@ -85,13 +88,12 @@ const Dashboard: React.FC = () => {
             Payments
           </button>
         </div>
-        {/* 👉 Divider Line */}
-        <div className="w-full border-t-2 border-gray-200"></div>
-        <div>
-          <TransactionHistory userId={userProfile.id} refetch={refetch} />
-        </div>
-        {showQRModal && <QRModal userId={userProfile.id} onClose={() => setShowQRModal(false)} />}
-        {showQRScanner && <QRScanner onClose={() => setShowQRScanner(false)} userId={userProfile.id} />}
+
+        {/* 👉 Transaction History */}
+        {userId && <TransactionHistory userId={userId} refetch={refetch} />}
+        
+        {userId && showQRModal && <QRModal userId={userId} onClose={() => setShowQRModal(false)} />}
+        {userId && showQRScanner && <QRScanner userId={userId} onClose={() => setShowQRScanner(false)} />}
       </div>
     </div>
   );

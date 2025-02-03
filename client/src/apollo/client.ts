@@ -20,19 +20,29 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const client = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
-  connectToDevTools: true,
-  defaultOptions: {
-    watchQuery: {
-      fetchPolicy: "network-only",
-    },
-    query: {
-      fetchPolicy: "no-cache",
+// ✅ Create a new cache instance to prevent Apollo from using old queries
+const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        getUser: {
+          merge(_, incoming) {
+            return incoming; // ✅ Always overwrite old data
+          },
+        },
+      },
     },
   },
 });
 
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache,
+  connectToDevTools: true,
+  defaultOptions: {
+    watchQuery: { fetchPolicy: "network-only" }, // ✅ Forces fresh data
+    query: { fetchPolicy: "network-only" },
+  },
+});
 
 export default client;
