@@ -18,6 +18,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   const scannerId = 'qr-scanner';
   const [qrData, setQrData] = useState<QRCodeData | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
+  const [scanComplete, setScanComplete] = useState(false); // ✅ Prevents double-scanning
 
   // Fetch wallet balance
   const { data: balanceData, loading: balanceLoading } = useQuery(GET_WALLET_BALANCE, {
@@ -29,8 +30,10 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
 
   // Handle QR scan result
   const handleScan = (data: string | null) => {
-    if (data) {
+    if (data && !scanComplete) {
       console.log("✅ QR Code Scanned:", data);
+      setScanComplete(true); // ✅ Prevent multiple scans
+
       try {
         const parsedData: QRCodeData = JSON.parse(data);
         if (!parsedData.receiverId || !parsedData.amount) {
@@ -42,6 +45,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
       } catch (error) {
         console.error("❌ Error parsing QR data:", error);
         alert("Invalid QR code. Please try again.");
+        setScanComplete(false); // ✅ Allow re-scanning after failure
       }
     }
   };
@@ -98,9 +102,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
     );
 
     return () => {
-      html5QrcodeScanner.clear();
+      html5QrcodeScanner.clear().catch((error) => console.error("❌ Error clearing scanner:", error));
     };
-  }, []);
+  }, []); // ✅ Ensures scanner initializes only once
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -118,7 +122,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
 
         <button
           onClick={handleTransfer}
-          disabled={!qrData}
+          disabled={!qrData || scanComplete}
           className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
         >
           {transferLoading ? "Transferring..." : "Transfer Funds"}
