@@ -45,17 +45,13 @@ const resolvers = {
 
     getTransactions: async (
       _: unknown,
-      {
-        userId,
-        limit = 10,
-        offset = 0,
-      }: { userId: string; limit?: number; offset?: number },
+      { userId, limit = 10, offset = 0 }: { userId: string; limit?: number; offset?: number },
       context: GraphQLContext
     ) => {
-      if (!context.user) throw new Error('Unauthorized');
+      if (!context.user) throw new Error("Unauthorized");
       const user = await User.findById(userId);
-      if (!user) throw new Error('User not found');
-
+      if (!user) throw new Error("User not found");
+    
       return user.transactions
         .sort((a, b) => b.date.getTime() - a.date.getTime())
         .slice(offset, offset + limit)
@@ -63,9 +59,11 @@ const resolvers = {
           id: tx._id.toString(),
           amount: tx.amount,
           type: tx.type,
-          date: tx.date.toISOString(),
+          status: tx.status,
+          date: new Date(tx.date).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" }), // ✅ Convert to AEST
         }));
     },
+    
     //new Item all are heavily researched and implemented ; also by the use if the google AI
     askChatbot: async (_: any, { userId, question }: { userId?: string; question: string }) => {
       try {
@@ -266,35 +264,50 @@ const resolvers = {
       }: { senderId: string; receiverId: string; amount: number },
       context: GraphQLContext
     ) => {
-      if (!context.user) throw new Error('Unauthorized');
+      if (!context.user) throw new Error("Unauthorized");
       await checkWalletLock(senderId);
-
+    
       const sender = await User.findById(senderId);
       const receiver = await User.findById(receiverId);
-      if (!sender || !receiver) throw new Error('Sender or Receiver not found');
-
-      if (sender.walletBalance < amount)
-        throw new Error('Insufficient balance');
-
+      if (!sender || !receiver) throw new Error("Sender or Receiver not found");
+    
+      if (sender.walletBalance < amount) throw new Error("Insufficient balance");
+    
       sender.walletBalance -= amount;
-      sender.transactions.push({ amount, type: 'debit', date: new Date() });
-
+      sender.transactions.push({
+        amount,
+        type: "debit",
+        status: "completed", // ✅ Fix: Mark sender's transaction as completed
+        date: new Date(),
+        receiverId,
+        description: `Transferred $${amount} to ${receiver.username}`,
+      });
+    
       receiver.walletBalance += amount;
-      receiver.transactions.push({ amount, type: 'credit', date: new Date() });
-
+      receiver.transactions.push({
+        amount,
+        type: "credit",
+        status: "completed", // ✅ Fix: Mark receiver's transaction as completed
+        date: new Date(),
+        senderId,
+        description: `Received $${amount} from ${sender.username}`,
+      });
+    
       await sender.save();
       await receiver.save();
-
+    
       return {
         id: sender._id.toString(),
         balance: sender.walletBalance,
         transactions: sender.transactions.map((tx) => ({
           amount: tx.amount,
           type: tx.type,
+          status: tx.status, // ✅ Ensure the status is included
           date: tx.date.toISOString(),
         })),
       };
     },
+    
 
     generateQR: async (
       _: unknown,
