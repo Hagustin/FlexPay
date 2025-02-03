@@ -63,7 +63,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
         })
           .then(() => {
             alert("✅ Transfer Successful");
-            onClose(); // Close scanner after success
+  
+            // Reset QR data & amount before closing
+            setQrData(null);
+            setAmount(null);
+  
+            onClose(); // ✅ Close scanner modal
           })
           .catch((error) => {
             alert(`❌ Transfer Failed: ${error.message}`);
@@ -75,6 +80,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
       alert("❌ Invalid QR data or amount");
     }
   };
+  
 
   // Set up QR scanner
   useEffect(() => {
