@@ -49,22 +49,29 @@ const resolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) throw new Error("Unauthorized");
+    
+      console.log(`🔍 Fetching transactions for user: ${userId}`); // ✅ Debug Log
+    
       const user = await User.findById(userId);
       if (!user) throw new Error("User not found");
     
+      console.log(`✅ User found: ${user.username}, Transactions:`, user.transactions); // ✅ Debug Transactions
+    
       return user.transactions
-        .filter((tx) => tx.status === "completed") // ✅ Show only completed transactions
         .sort((a, b) => b.date.getTime() - a.date.getTime())
         .slice(offset, offset + limit)
         .map((tx) => ({
           id: tx._id.toString(),
           amount: tx.amount,
           type: tx.type,
-          status: "completed", // ✅ Ensure transactions always show as completed
+          status: tx.status,
           date: new Date(tx.date).toLocaleString("en-AU", { timeZone: "Australia/Melbourne" }), // ✅ Convert to AEST
-          description: tx.description,
+          senderId: tx.senderId,
+          receiverId: tx.receiverId,
+          description: tx.description || "No description",
         }));
     },
+    
     
     //new Item all are heavily researched and implemented ; also by the use if the google AI
     askChatbot: async (_: any, { userId, question }: { userId?: string; question: string }) => {
@@ -259,11 +266,7 @@ const resolvers = {
 
     transferFunds: async (
       _: unknown,
-      {
-        senderId,
-        receiverId,
-        amount,
-      }: { senderId: string; receiverId: string; amount: number },
+      { senderId, receiverId, amount }: { senderId: string; receiverId: string; amount: number },
       context: GraphQLContext
     ) => {
       if (!context.user) throw new Error("Unauthorized");
@@ -275,13 +278,14 @@ const resolvers = {
     
       if (sender.walletBalance < amount) throw new Error("Insufficient balance");
     
+      console.log("🔹 Sender Before Transaction:", sender);
+      console.log("🔹 Receiver Before Transaction:", receiver);
+    
       sender.walletBalance -= amount;
-      receiver.walletBalance += amount
-
       sender.transactions.push({
         amount,
         type: "debit",
-        status: "completed", // ✅ Fix: Mark sender's transaction as completed
+        status: "completed", 
         date: new Date(),
         receiverId,
         description: `Transferred $${amount} to ${receiver.username}`,
@@ -291,7 +295,7 @@ const resolvers = {
       receiver.transactions.push({
         amount,
         type: "credit",
-        status: "completed", // ✅ Fix: Mark receiver's transaction as completed
+        status: "completed",
         date: new Date(),
         senderId,
         description: `Received $${amount} from ${sender.username}`,
@@ -300,13 +304,16 @@ const resolvers = {
       await sender.save();
       await receiver.save();
     
+      console.log("✅ Sender After Transaction:", sender);
+      console.log("✅ Receiver After Transaction:", receiver);
+    
       return {
         id: sender._id.toString(),
         balance: sender.walletBalance,
         transactions: sender.transactions.map((tx) => ({
           amount: tx.amount,
           type: tx.type,
-          status: tx.status, // ✅ Ensure the status is included
+          status: tx.status, 
           date: tx.date.toISOString(),
         })),
       };
@@ -320,91 +327,92 @@ const resolvers = {
     ) => {
       if (!context.user) throw new Error('Unauthorized');
       await checkWalletLock(userId);
-
+    
       const user = await User.findById(userId);
       if (!user) throw new Error('User not found');
-
+    
       if (user.walletBalance < amount) throw new Error('Insufficient funds');
-
+    
       // Generate QR Code
       const qrCode = uuidv4();
-
-      // Store QR Code in Transactions
+    
+      // Store QR Code in Transactions with "pending" status
       user.transactions.push({
         amount,
         type: 'pending',
         date: new Date(),
         qrCode,
       });
-
+    
       await user.save();
-
-      return { code: qrCode, amount, status: 'pending' };
+    
+      return { code: qrCode, amount, status: 'pending' }; // ✅ Show that it's pending
     },
+    
 
     scanQR: async (
       _: unknown,
       { userId, qrCode }: { userId: string; qrCode: string },
       context: GraphQLContext
     ) => {
-      if (!context.user) throw new Error('Unauthorized');
+      if (!context.user) throw new Error("Unauthorized");
       await checkWalletLock(userId);
     
       const payer = await User.findById(userId);
-      if (!payer) throw new Error('User (payer) not found');
+      if (!payer) throw new Error("User (payer) not found");
     
-      // ✅ Find the user who generated the QR code (should receive money)
+      // Find the user who generated the QR code (should receive money)
       const receiver = await User.findOne({ 'transactions.qrCode': qrCode });
-      if (!receiver) throw new Error('QR code not found or expired');
+      if (!receiver) throw new Error("QR code not found or expired");
     
-      // ✅ Locate the original transaction
+      // Locate the transaction
       const transactionIndex = receiver.transactions.findIndex(tx => tx.qrCode === qrCode);
-      if (transactionIndex === -1) throw new Error('Invalid transaction');
+      if (transactionIndex === -1) throw new Error("Invalid transaction");
     
       const transaction = receiver.transactions[transactionIndex];
-      if (transaction.status !== 'pending') throw new Error('Transaction already processed');
+      if (transaction.type !== "pending") throw new Error("Transaction is not pending");
     
-      // ✅ Ensure payer has enough balance
+      // Ensure payer has enough balance
       if (payer.walletBalance < transaction.amount)
-        throw new Error('Insufficient funds');
+        throw new Error("Insufficient funds");
     
-      // ✅ Process transaction & update balances
+      // ✅ Process the transaction
       payer.walletBalance -= transaction.amount;
       receiver.walletBalance += transaction.amount;
     
-      // ✅ Store new transaction details
-      const transactionDate = new Date();
-    
       payer.transactions.push({
         amount: transaction.amount,
-        type: 'debit',
-        date: transactionDate,
-        status: "completed",
+        type: "debit",
+        status: "completed", // ✅ Mark as completed
+        date: new Date(),
         description: `Sent $${transaction.amount} to ${receiver.username}`
       });
     
       receiver.transactions.push({
         amount: transaction.amount,
-        type: 'credit',
-        date: transactionDate,
-        status: "completed",
+        type: "credit",
+        status: "completed", // ✅ Mark as completed
+        date: new Date(),
         description: `Received $${transaction.amount} from ${payer.username}`
       });
     
-      // ✅ Fix original QR transaction: mark as completed & remove QR code
+      // ✅ Update QR transaction as completed
       receiver.transactions[transactionIndex].status = "completed";
-      receiver.transactions[transactionIndex].qrCode = undefined;
+      receiver.transactions[transactionIndex].qrCode = undefined; // Remove QR code reference
     
       await payer.save();
       await receiver.save();
     
+      console.log("✅ QR Transaction Completed:", receiver.transactions);
+    
       return {
         id: receiver._id.toString(),
         balance: receiver.walletBalance,
-        transactionStatus: 'completed',
+        transactionStatus: "completed",
       };
     },
     
+
     
     lockWallet: async (
       _: unknown,

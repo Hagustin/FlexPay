@@ -21,7 +21,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   const [scanComplete, setScanComplete] = useState(false); // ✅ Prevents double-scanning
 
   // Fetch wallet balance
-  const { data: balanceData, loading: balanceLoading } = useQuery(GET_WALLET_BALANCE, {
+  const { data: balanceData, loading: balanceLoading, refetch } = useQuery(GET_WALLET_BALANCE, {
     variables: { id: userId },
   });
 
@@ -53,22 +53,18 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   // Handle transfer funds
   const handleTransfer = () => {
     if (qrData && amount !== null) {
-      if (balanceData?.getUser.walletBalance >= amount) {
+      if (balanceData && balanceData.getUser.walletBalance >= amount) {
         transferFunds({
           variables: {
             senderId: userId,
             receiverId: qrData.receiverId,
-            amount,
+            amount: amount,
           },
         })
           .then(() => {
             alert("✅ Transfer Successful");
-  
-            // Reset QR data & amount before closing
-            setQrData(null);
-            setAmount(null);
-  
-            onClose(); // ✅ Close scanner modal
+            onClose(); // Close scanner after success
+            refetch(); // ✅ Ensure transaction history updates
           })
           .catch((error) => {
             alert(`❌ Transfer Failed: ${error.message}`);
@@ -80,6 +76,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
       alert("❌ Invalid QR data or amount");
     }
   };
+  
+
   
 
   // Set up QR scanner
