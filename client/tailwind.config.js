@@ -5,9 +5,15 @@ export default {
     extend: {
       screens: {},
       colors: {},
-      width: {},
+      width: {
+        breakpoint: '1096px',
+      },
       outline: {},
-      fontSize: {},
+      fontSize: {
+        'medium-text': '50px',
+        'small-text': '25px',
+        'large-text': '96px',
+      },
       fontFamily: {
         ivy: ['Ivy Mode', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],

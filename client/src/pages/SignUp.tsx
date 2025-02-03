@@ -8,7 +8,7 @@ const SignupPage: React.FC = () => {
           Don’t Have An Account?
         </p>
         <p className="font-ivy text-5xl w-2/5 tracking-widest">
-          Complete The Sign Up Process Below 🐄🐷🧑🏽‍🌾
+          Sign Up Below 🐄🐷🧑🏽‍🌾
         </p>
       </div>
       <SignUp />

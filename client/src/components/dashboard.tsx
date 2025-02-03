@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_USER } from '../graphql/queries';
 import AuthService from '../utils/auth';
@@ -6,8 +6,12 @@ import bank from '../assets/building-bank.svg';
 import coin from '../assets/coin.svg';
 import wallet from '../assets/wallet.svg';
 import TransactionHistory from './TransactionHistory';
+import QRModal from './QrCodeModal';
+import QRScanner from './QrCodeScanner';
 
 const Dashboard: React.FC = () => {
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const userProfile = AuthService.getProfile();
 
   console.log('🔹 User Profile from AuthService:', userProfile); // Debugging
@@ -36,7 +40,7 @@ const Dashboard: React.FC = () => {
           <p className="text-sm font-medium text-gray-400 tracking-widest ">
             Welcome Back
           </p>
-          <h1 className="text-4xl font-medium text-black font-ivy tracking-widest ">
+          <h1 className=" text-3xl sm:text-4xl font-medium text-black font-ivy tracking-widest ">
             {username}'s Wallet
           </h1>
         </div>
@@ -53,23 +57,29 @@ const Dashboard: React.FC = () => {
           <p className="text-sm font-medium text-gray-400 tracking-widest ">
             Current Balance
           </p>
-          <p className="text-8xl font-medium text-black font-ivy tracking-widest">
+          <p className=" text-5xl sm:text-8xl font-medium text-black font-ivy tracking-widest">
             ${walletBalance.toFixed(2)}
             <span className="font-inter text-base font-medium tracking-widest">
               AUD
             </span>
           </p>
         </div>
-        <div className="flex flex-row gap-2.5">
-          <button className="py-5 px-12 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center">
+        <div className="flex flex-row gap-2.5 flex-wrap">
+          <button
+            className="py-5 px-12 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center"
+            onClick={() => setShowQRScanner(true)}
+          >
             <img src={bank} />
             Deposit
           </button>
-          <button className="py-5 px-12 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center">
+          <button className="py-5 px-12 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center ">
             <img src={wallet} />
             Withdraw
           </button>
-          <button className="py-5 px-12  bg-green-500 hover:bg-green-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center">
+          <button
+            className="py-5 px-12  bg-green-500 hover:bg-green-600 text-white rounded-full font-intertext-base tracking-wide flex flex-row gap-3.5 items-center"
+            onClick={() => setShowQRModal(true)}
+          >
             <img src={coin} />
             Payments
           </button>
@@ -79,6 +89,19 @@ const Dashboard: React.FC = () => {
         <div>
           <TransactionHistory userId={userProfile.id} />
         </div>
+        {showQRModal && (
+          <QRModal
+            userId={userProfile.id}
+            onClose={() => setShowQRModal(false)}
+          />
+        )}
+
+        {showQRScanner && (
+          <QRScanner
+            onClose={() => setShowQRScanner(false)}
+            userId={userProfile.id}
+          />
+        )}
       </div>
     </div>
   );
