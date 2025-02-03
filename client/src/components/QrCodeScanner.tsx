@@ -31,20 +31,26 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   const [transferFunds, { loading: transferLoading, error: transferError }] =
     useMutation(TRANSFER_FUNDS);
 
-  const handleScan = (data: string | null) => {
-    if (data) {
-      console.log('🔹 Scanned QR Code:', data);
-      try {
-        const parsedData: QRCodeData = JSON.parse(data); // Assuming QR code contains JSON with receiverId and amount
-        setQrData(parsedData);
-        setAmount(parsedData.amount);
-        alert(`Scanned Data: ${data}`);
-      } catch (error) {
-        console.error('Error parsing QR data:', error);
-        alert('Invalid QR code data');
+    const handleScan = (data: string | null) => {
+      if (data) {
+        console.log("🔹 Scanned QR Code:", data);
+    
+        try {
+          const parsedData: QRCodeData = JSON.parse(data); // ✅ Ensure QR code contains valid JSON
+          if (!parsedData.receiverId || !parsedData.amount) {
+            throw new Error("Invalid QR code format");
+          }
+    
+          setQrData(parsedData);
+          setAmount(parsedData.amount);
+          alert(`Scanned Data: ${JSON.stringify(parsedData, null, 2)}`);
+        } catch (error) {
+          console.error("❌ Error parsing QR data:", error);
+          alert("Invalid QR code. Please try again.");
+        }
       }
-    }
-  };
+    };
+    
 
   const handleError = (err: any) => {
     console.error('❌ QR Scan Error:', err);
