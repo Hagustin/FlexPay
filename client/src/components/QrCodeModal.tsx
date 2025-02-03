@@ -12,19 +12,28 @@ const QRModal: React.FC<QRModalProps> = ({ userId, onClose }) => {
   const [amount, setAmount] = useState('');
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
 
-  const [generateQR, { loading, error }] = useMutation(GENERATE_QR, {
-    onCompleted: (data) => {
-      setQrCodeData(data.generateQR.code);
-    },
-  });
+  const [generateQR, { loading, error }] = useMutation(GENERATE_QR);
 
   const handleGenerateQR = () => {
     if (!amount || isNaN(parseFloat(amount))) {
-      alert('Please enter a valid amount');
+      alert("Please enter a valid amount");
       return;
     }
-    generateQR({ variables: { userId, amount: parseFloat(amount) } });
+  
+    const formattedAmount = parseFloat(amount);
+  
+    generateQR({ variables: { userId, amount: formattedAmount } }).then(({ data }) => {
+      if (data && data.generateQR.code) {
+        const qrPayload = {
+          receiverId: userId, // ✅ Ensure the correct user ID is stored in QR
+          amount: formattedAmount,
+        };
+  
+        setQrCodeData(JSON.stringify(qrPayload)); // ✅ Store JSON as string
+      }
+    });
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
