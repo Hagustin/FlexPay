@@ -11,29 +11,34 @@ interface QRModalProps {
 const QRModal: React.FC<QRModalProps> = ({ userId, onClose }) => {
   const [amount, setAmount] = useState('');
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
-
   const [generateQR, { loading, error }] = useMutation(GENERATE_QR);
 
-  const handleGenerateQR = () => {
-    if (!amount || isNaN(parseFloat(amount))) {
-      alert("Please enter a valid amount");
+  const handleGenerateQR = async () => {
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      alert("⚠️ Please enter a valid amount greater than zero.");
       return;
     }
-  
+
     const formattedAmount = parseFloat(amount);
-  
-    generateQR({ variables: { userId, amount: formattedAmount } }).then(({ data }) => {
+
+    try {
+      const { data } = await generateQR({ variables: { userId, amount: formattedAmount } });
+
       if (data && data.generateQR.code) {
         const qrPayload = {
           receiverId: userId, // ✅ Ensure the correct user ID is stored in QR
           amount: formattedAmount,
         };
-  
+
         setQrCodeData(JSON.stringify(qrPayload)); // ✅ Store JSON as string
+      } else {
+        alert("❌ Error generating QR code. Please try again.");
       }
-    });
+    } catch (error) {
+      console.error("❌ Error generating QR Code:", error);
+      alert("⚠️ An error occurred while generating the QR code.");
+    }
   };
-  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -53,10 +58,11 @@ const QRModal: React.FC<QRModalProps> = ({ userId, onClose }) => {
           onChange={(e) => setAmount(e.target.value)}
           className="w-full p-4 pl-6 border rounded-full"
           placeholder="Enter Amount..."
+          min="0.01"
         />
 
         <div className="flex flex-col items-center">
-          {loading && <p>Generating...</p>}
+          {loading && <p>🔄 Generating QR Code...</p>}
           {error && <p className="text-red-500">{error.message}</p>}
 
           {qrCodeData && (
@@ -70,9 +76,10 @@ const QRModal: React.FC<QRModalProps> = ({ userId, onClose }) => {
         <div className="flex flex-col gap-3">
           <button
             onClick={handleGenerateQR}
+            disabled={loading} // ✅ Prevent multiple clicks while generating
             className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
           >
-            Confirm
+            {loading ? "Generating..." : "Confirm"}
           </button>
 
           <button
