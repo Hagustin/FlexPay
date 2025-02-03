@@ -23,7 +23,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex items-center justify-between px-6 py-8 bg-gray-100 w-full">
+    <nav className="flex items-center justify-between px-0 py-8 bg-gray-100 w-full">
       <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
         <div className="flex flex-row gap-2.5 items-center text-2xl font-ivy">
           <img src={breadIcon} alt="FlexPay Logo" className="h-10 w-auto" />
