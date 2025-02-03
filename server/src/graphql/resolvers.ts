@@ -346,48 +346,56 @@ const resolvers = {
       if (!context.user) throw new Error('Unauthorized');
       await checkWalletLock(userId);
 
-      const receiver = await User.findById(userId);
-      if (!receiver) throw new Error('User not found');
+      const payer = await User.findById(userId);
+      if (!payer) throw new Error('User (payer) not found');
 
-      // Find sender by matching the QR code in their transactions
-      const sender = await User.findOne({ 'transactions.qrCode': qrCode });
-      if (!sender) throw new Error('QR code not found or expired');
+      // Find the user who generated the QR code (should receive money)
+      const receiver = await User.findOne({ 'transactions.qrCode': qrCode });
+      if (!receiver) throw new Error('QR code not found or expired');
 
-      // Get the transaction details
-      const transactionIndex = sender.transactions.findIndex(
-        (tx) => tx.qrCode === qrCode
-      );
+      // Locate the transaction
+      const transactionIndex = receiver.transactions.findIndex(tx => tx.qrCode === qrCode);
       if (transactionIndex === -1) throw new Error('Invalid transaction');
 
-      const transaction = sender.transactions[transactionIndex];
+      const transaction = receiver.transactions[transactionIndex];
+      if (transaction.type !== 'pending') throw new Error('Transaction is not pending');
 
-      // Ensure receiver has enough balance
-      if (receiver.walletBalance < transaction.amount)
+      // Ensure payer has enough balance
+      if (payer.walletBalance < transaction.amount)
         throw new Error('Insufficient funds');
 
-      // Process transaction
-      receiver.walletBalance -= transaction.amount;
-      sender.walletBalance += transaction.amount;
+      // Process the transaction
+      payer.walletBalance -= transaction.amount;
+      receiver.walletBalance += transaction.amount;
 
-      receiver.transactions.push({
+      payer.transactions.push({
         amount: transaction.amount,
         type: 'debit',
         date: new Date(),
+        description: `Sent $${transaction.amount} to ${receiver.username}`
       });
-      sender.transactions.push({
+
+      receiver.transactions.push({
         amount: transaction.amount,
         type: 'credit',
         date: new Date(),
+        description: `Received $${transaction.amount} from ${payer.username}`
       });
 
-      // Mark QR code transaction as completed
-      sender.transactions[transactionIndex].type = 'completed';
+      // Mark the original QR transaction as completed
+      receiver.transactions[transactionIndex].type = 'completed';
+      receiver.transactions[transactionIndex].qrCode = undefined;
 
+      await payer.save();
       await receiver.save();
-      await sender.save();
 
-      return { id: receiver._id.toString(), balance: receiver.walletBalance };
+      return {
+        id: receiver._id.toString(),
+        balance: receiver.walletBalance,
+        transactionStatus: 'completed',
+      };
     },
+    
     lockWallet: async (
       _: unknown,
       { userId }: { userId: string },

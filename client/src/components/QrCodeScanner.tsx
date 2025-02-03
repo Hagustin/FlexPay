@@ -41,7 +41,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
         }
         setQrData(parsedData);
         setAmount(parsedData.amount);
-        alert(`Scanned Data: ${JSON.stringify(parsedData, null, 2)}`);
+        alert(`✅ Transfer Amount: $${parsedData.amount}\n✅ Status: Completed`);
       } catch (error) {
         console.error("❌ Error parsing QR data:", error);
         alert("Invalid QR code. Please try again.");

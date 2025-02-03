@@ -26,11 +26,11 @@ const QRModal: React.FC<QRModalProps> = ({ userId, onClose }) => {
 
       if (data && data.generateQR.code) {
         const qrPayload = {
-          receiverId: userId, // ✅ Ensure the correct user ID is stored in QR
+          receiverId: userId, // ✅ Store correct user ID
           amount: formattedAmount,
         };
 
-        setQrCodeData(JSON.stringify(qrPayload)); // ✅ Store JSON as string
+        setQrCodeData(JSON.stringify(qrPayload));
       } else {
         alert("❌ Error generating QR code. Please try again.");
       }
@@ -52,43 +52,54 @@ const QRModal: React.FC<QRModalProps> = ({ userId, onClose }) => {
           </label>
         </div>
 
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-full p-4 pl-6 border rounded-full"
-          placeholder="Enter Amount..."
-          min="0.01"
-        />
+        {!qrCodeData && (
+          <>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full p-4 pl-6 border rounded-full"
+              placeholder="Enter Amount..."
+              min="0.01"
+            />
+            <button
+              onClick={handleGenerateQR}
+              disabled={loading}
+              className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
+            >
+              {loading ? "Generating..." : "Confirm"}
+            </button>
+          </>
+        )}
 
         <div className="flex flex-col items-center">
           {loading && <p>🔄 Generating QR Code...</p>}
           {error && <p className="text-red-500">{error.message}</p>}
-
           {qrCodeData && (
-            <div className="flex flex-col items-center">
-              <QRCodeCanvas value={qrCodeData} size={200} />
+            <div className="relative flex flex-col items-center">
+              <QRCodeCanvas
+                value={qrCodeData}
+                size={200}
+                bgColor="#ffffff" 
+                fgColor="#000000" 
+                level="H" 
+                includeMargin={true}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-black font-bold text-lg bg-white px-2 rounded-md">
+                  FLEXPAY
+                </span>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Buttons stay under the QR code */}
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={handleGenerateQR}
-            disabled={loading} // ✅ Prevent multiple clicks while generating
-            className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
-          >
-            {loading ? "Generating..." : "Confirm"}
-          </button>
-
-          <button
-            onClick={onClose}
-            className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
-          >
-            Cancel
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="py-3 px-6 border-1.25 border-black outline outline-black rounded-full font-inter hover:text-white hover:bg-black text-sm tracking-wide"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
