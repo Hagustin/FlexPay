@@ -346,29 +346,33 @@ const resolvers = {
       { userId, amount }: { userId: string; amount: number },
       context: GraphQLContext
     ) => {
-      if (!context.user) throw new Error('Unauthorized');
-      await checkWalletLock(userId);
+      if (!context.user) throw new Error("Unauthorized");
     
       const user = await User.findById(userId);
-      if (!user) throw new Error('User not found');
+      if (!user) throw new Error("User not found");
     
-      if (user.walletBalance < amount) throw new Error('Insufficient funds');
-    
-      // Generate QR Code
+      // ✅ Generate a Unique QR Code (UUID)
       const qrCode = uuidv4();
     
-      // Store QR Code in Transactions with "pending" status
-      user.transactions.push({
+      // ✅ Define the Pending Transaction
+      const newTransaction = {
         amount,
-        type: 'pending',
+        type: "pending" as const,  // ✅ Ensure proper type
+        status: "pending" as const, 
         date: new Date(),
         qrCode,
-      });
+      };
     
+      // ✅ Save transaction into user's history
+      user.transactions.push(newTransaction);
       await user.save();
     
-      return { code: qrCode, amount, status: 'pending' }; 
+      console.log("✅ New QR Code Transaction Created:", newTransaction);
+    
+      return { code: qrCode, amount, status: "pending" };
     },
+    
+    
     
 
     scanQR: async (
@@ -383,14 +387,17 @@ const resolvers = {
       if (!payer) throw new Error("User (payer) not found");
     
       // ✅ Find the receiver with the pending transaction
-      const receiver = await User.findOne(
-        { "transactions.qrCode": qrCode, "transactions.type": "pending" }
-      );
+      const receiver = await User.findOne({
+        "transactions.qrCode": qrCode,
+        "transactions.type": "pending",
+      });
     
       if (!receiver) {
         console.error("❌ QR Code not found or already completed");
         throw new Error("QR code not found or expired");
       }
+    
+      console.log("✅ Receiver Found:", receiver);
     
       // ✅ Locate transaction in receiver's transactions
       const transaction = receiver.transactions.find(tx => tx.qrCode === qrCode);
@@ -420,8 +427,8 @@ const resolvers = {
         {
           $set: {
             "transactions.$.type": "completed",
-            "transactions.$.qrCode": null
-          }
+            "transactions.$.qrCode": null,
+          },
         },
         { new: true }
       );
@@ -434,7 +441,7 @@ const resolvers = {
         type: "debit",
         status: "completed",
         date: new Date(),
-        description: `Sent $${transaction.amount} to ${receiver.username}`
+        description: `Sent $${transaction.amount} to ${receiver.username}`,
       });
     
       await payer.save();
@@ -451,7 +458,7 @@ const resolvers = {
         balance: receiver.walletBalance,
         transactionStatus: "completed",
       };
-    },
+    },    
     
          
     

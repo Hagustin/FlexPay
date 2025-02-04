@@ -64,6 +64,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
       if (!qrCode) {
         throw new Error('Invalid QR code format');
       }
+
+      console.log('🔍 Final QR Code:', qrCode);
   
       // Call the scanQR mutation
       const { data: scanData } = await scanQR({
