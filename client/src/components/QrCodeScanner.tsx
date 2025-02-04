@@ -38,41 +38,53 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
 
   // Handle QR scan result
   // Handle QR scan result
-const handleScan = async (data: string | null) => {
-  if (!data || scanComplete) return; // this will prevent multiple prompts
+  const handleScan = async (data: string | null) => {
+    if (!data || scanComplete) return; // Prevent multiple prompts
+    
+    console.log('✅ Raw QR Code Scanned:', data);
+    setScanComplete(true);
   
-  console.log('✅ QR Code Scanned:', data);
-  setScanComplete(true);
-
-  try {
-    const parsedData = JSON.parse(data);
-    if (!parsedData.qrCode) {
-      throw new Error('Invalid QR code format');
+    try {
+      let qrCode = data.trim(); // Ensure no extra spaces
+      console.log('🔍 Trimmed QR Code:', qrCode);
+  
+      // Check if the QR code is JSON or just a string
+      try {
+        const parsedData = JSON.parse(qrCode);
+        if (parsedData.qrCode) {
+          qrCode = parsedData.qrCode;
+        } else {
+          throw new Error('Invalid JSON QR format'); // Force fallback to plain string
+        }
+      } catch {
+        // If parsing fails, assume the QR code is a plain string (UUID)
+        console.log('🔍 Assuming plain string QR Code');
+      }
+  
+      if (!qrCode) {
+        throw new Error('Invalid QR code format');
+      }
+  
+      // Call the scanQR mutation
+      const { data: scanData } = await scanQR({
+        variables: { userId, qrCode },
+      });
+  
+      console.log('✅ ScanQR Response:', scanData);
+      alert('✅ Payment Successful! Wallet Updated.');
+  
+      // Refresh wallet balance and transactions
+      await refetchBalance();
+      await refetchTransactions();
+  
+      onClose();
+    } catch (error) {
+      console.error('❌ Error processing QR code:', error);
+      alert(error instanceof Error ? error.message : 'Unexpected error. Please try again.');
+      setScanComplete(false);
     }
-
-    // Call the scanQR mutation
-    const { data: scanData } = await scanQR({
-      variables: { userId, qrCode: parsedData.qrCode },
-    });
-
-    console.log('✅ ScanQR Response:', scanData);
-    alert('✅ Payment Successful! Wallet Updated.');
-
-    // Refresh wallet balance and transactions
-    await refetchBalance();
-    await refetchTransactions();
-
-    onClose();
-  } catch (error) {
-    console.error('❌ Error processing QR code:', error);
-    if (error instanceof Error) {
-      alert(error.message || 'Unexpected error. Please try again.');
-    } else {
-      alert('Unexpected error. Please try again.');
-    }
-    setScanComplete(false);
-  }
-};
+  };
+  
 
 
   // Set up QR scanner
