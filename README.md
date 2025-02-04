@@ -96,7 +96,7 @@ npm run start
 ### 4️⃣ Build for Production
 ```bash
 npm run build
-npm dev
+npm run dev
 ```
 - Backend serves the frontend in **production mode**
 
@@ -158,6 +158,7 @@ NODE_ENV=production
 PORT=3001
 MONGODB_URI=mongodb+srv://your-mongo-url
 JWT_SECRET_KEY=your-secret-key
+GEMINI_API_KEY='AIzaSyBFp15Ok-VzRHxnY85wp_svgYAgHDJ3QjY'
 ```
 
 ---
@@ -166,13 +167,13 @@ JWT_SECRET_KEY=your-secret-key
 ### Run Backend Tests
 ```bash
 cd server
-npm test
+npm run test
 ```
 
 ### Run Frontend Tests
 ```bash
 cd client
-npm test
+npm run test
 ```
 
 ---
