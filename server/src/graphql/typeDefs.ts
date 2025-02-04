@@ -30,6 +30,7 @@ const typeDefs = gql`
   type: String!
   status: String!
   date: String!
+  qrCode: String
   senderId: ID
   receiverId: ID
   description: String
