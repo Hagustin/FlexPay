@@ -22,7 +22,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   const scannerId = 'qr-scanner';
   const [qrData, setQrData] = useState<QRCodeData | null>(null);
   const [amount, setAmount] = useState<number | null>(null);
-  const [scanComplete, setScanComplete] = useState(false); // ✅ Prevents double-scanning
+  const [scanComplete, setScanComplete] = useState(false); // 
 
   // Fetch wallet balance
   const {
@@ -41,7 +41,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onClose, userId }) => {
   const handleScan = (data: string | null) => {
     if (data && !scanComplete) {
       console.log('✅ QR Code Scanned:', data);
-      setScanComplete(true); // ✅ Prevent multiple scans
+      setScanComplete(true); // ✅ 
 
       try {
         const parsedData: QRCodeData = JSON.parse(data);
