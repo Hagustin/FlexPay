@@ -158,7 +158,7 @@ NODE_ENV=production
 PORT=3001
 MONGODB_URI=mongodb+srv://your-mongo-url
 JWT_SECRET_KEY=your-secret-key
-GEMINI_API_KEY='AIzaSyBFp15Ok-VzRHxnY85wp_svgYAgHDJ3QjY'
+GEMINI_API_KEY='your_key_here'
 ```
 
 ---
