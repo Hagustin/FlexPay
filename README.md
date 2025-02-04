@@ -8,6 +8,7 @@ FlexPay is a full-stack fintech application designed to modernize digital paymen
 - [Tech Stack](#tech-stack)
 - [Folder Structure](#folder-structure)
 - [Deployment Instructions](#deployment-instructions)
+- [User Instructions](#user-instructions)
 - [API Endpoints](#api-endpoints)
 - [Environment Variables](#environment-variables)
 - [Testing](#testing)
@@ -99,6 +100,45 @@ npm start
 - Backend serves the frontend in **production mode**
 
 ---
+
+## User Instructions
+
+Upon opening the application, users will land on the 'SignUp' page:
+
+![User Signup](assets/signup.jpg)
+
+To login, users can enter the following login details: 
+user: 'lach@test.com'
+password: '1234'
+
+![User Login](assets/login.jpg)
+
+Users will see their starting wallet displayed:
+
+![User Wallet](assets/walletZeroBalance)
+
+Users can click 'deposit' to open up their camera, which will allow them ro 'receive funds':
+
+![Open Camera](assets/openCamera.jpg)
+
+Users can also click 'payments', to send funds:
+
+![Send Funds](assets/sendFunds.jpg)
+
+After entering the amount the user wishes to send, they can generate a QR code, for the receiver to scan:
+
+![QR Code](assets/QRCode1.jpg)
+
+After the receiver has scanned the QR Code, they will see their wallet balance update with the amount transferred:
+
+![Updated Wallet](assets/updatedWalletBalance.jpg)
+
+Users can see their recent transaction history below their wallet balance:
+
+![Transaction History](assets/transactions.jpg)
+
+![Github Workflow](assets/githubActions.png)
+
 
 ## API Endpoints
 | Endpoint           | Method | Description |
