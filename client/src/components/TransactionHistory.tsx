@@ -23,6 +23,17 @@ interface TransactionHistoryProps {
   refetch: () => Promise<any>; // shareef added this to update transactio nafter scan
 }
 
+const formatDate = (dateString: string) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short', // "Feb"
+    day: '2-digit', // "04"
+    hour: '2-digit', // "07 PM"
+    minute: '2-digit',
+    hour12: true, // Show AM/PM
+  }).format(new Date(dateString));
+};
+
 const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   userId,
   refetch,
@@ -104,7 +115,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                     </div>
                   </div>
                   <div className="pl-10 font-ivy tracking-widest text-lg">
-                    {txn.date}
+                    {formatDate(txn.date)}
                   </div>
                   <div className="pl-10 text-sm text-gray-600">
                     {txn.description || 'No description'}
