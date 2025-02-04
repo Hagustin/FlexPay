@@ -161,14 +161,16 @@ const Dashboard: React.FC = () => {
           <WithdrawalModal
             onClose={() => setShowWithdrawalModal(false)}
             isOpen={showWithdrawalModal}
-            children={undefined}
             userId={userId}
           />
         )}
 
         {/* 👉 Bank Deposit Modal */}
         {showBankDepositModal && (
-          <BankDepositModal onClose={() => setShowBankDepositModal(false)} />
+          <BankDepositModal
+            onClose={() => setShowBankDepositModal(false)}
+            userId={userId}
+          />
         )}
       </div>
     </div>

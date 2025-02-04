@@ -225,28 +225,37 @@ const resolvers = {
       { userId, amount }: { userId: string; amount: number },
       context: GraphQLContext
     ) => {
-      if (!context.user) throw new Error('Unauthorized');
+      if (!context.user) throw new Error("Unauthorized");
       await checkWalletLock(userId);
-
+    
       const user = await User.findById(userId);
-      if (!user) throw new Error('User not found');
-
+      if (!user) throw new Error("User not found");
+    
       user.walletBalance += amount;
-      user.transactions.push({ amount, type: 'credit', date: new Date() });
-
+      user.transactions.push({
+        amount,
+        type: "credit",
+        status: "completed", // ✅ Ensure this is added
+        date: new Date(),
+        description: `Bank Deposit of $${amount}`,
+      });
+    
       await user.save();
-
+    
       return {
         id: user._id.toString(),
         balance: user.walletBalance,
         transactions: user.transactions.map((tx) => ({
+          id: tx._id.toString(),
           amount: tx.amount,
           type: tx.type,
+          status: tx.status,
           date: tx.date.toISOString(),
+          description: tx.description || "Bank Deposit",
         })),
       };
     },
-
+    
     withdrawFunds: async (
       _: unknown,
       { userId, amount }: { userId: string; amount: number },
@@ -373,51 +382,69 @@ const resolvers = {
       const payer = await User.findById(userId);
       if (!payer) throw new Error("User (payer) not found");
     
-      const receiver = await User.findOne({ "transactions.qrCode": qrCode });
-      if (!receiver) throw new Error("QR code not found or expired");
+      // ✅ Find the receiver with the pending transaction
+      const receiver = await User.findOne(
+        { "transactions.qrCode": qrCode, "transactions.type": "pending" }
+      );
     
-      // Locate the transaction in receiver's transactions
-      const transactionIndex = receiver.transactions.findIndex(tx => tx.qrCode === qrCode);
-      if (transactionIndex === -1) throw new Error("Invalid transaction");
+      if (!receiver) {
+        console.error("❌ QR Code not found or already completed");
+        throw new Error("QR code not found or expired");
+      }
     
-      const transaction = receiver.transactions[transactionIndex];
+      // ✅ Locate transaction in receiver's transactions
+      const transaction = receiver.transactions.find(tx => tx.qrCode === qrCode);
     
-      if (transaction.status !== "pending") throw new Error("Transaction is not pending");
+      if (!transaction) throw new Error("Invalid transaction");
+      console.log("🔍 Transaction Found:", transaction);
     
-      // Ensure payer has enough balance
-      if (payer.walletBalance < transaction.amount) throw new Error("Insufficient funds");
+      if (transaction.type !== "pending") {
+        console.error("❌ Transaction is already completed or invalid");
+        throw new Error("Transaction is not pending");
+      }
     
-      console.log("🔍 BEFORE UPDATE:", transaction);
+      // ✅ Ensure payer has enough balance
+      if (payer.walletBalance < transaction.amount) {
+        throw new Error("Insufficient funds");
+      }
+    
+      console.log("✅ BEFORE UPDATE:", transaction);
     
       // ✅ Process the transaction (Atomic update)
       payer.walletBalance -= transaction.amount;
       receiver.walletBalance += transaction.amount;
     
-      // ✅ Update the existing transaction (instead of duplicating)
-      receiver.transactions[transactionIndex].status = "completed";
-      receiver.transactions[transactionIndex].qrCode = undefined; // Remove QR reference
+      // ✅ Update transaction status using `findOneAndUpdate`
+      const updatedReceiver = await User.findOneAndUpdate(
+        { "transactions.qrCode": qrCode, "transactions.type": "pending" },
+        {
+          $set: {
+            "transactions.$.type": "completed",
+            "transactions.$.qrCode": null
+          }
+        },
+        { new: true }
+      );
     
-      console.log("🔍 AFTER UPDATE:", receiver.transactions[transactionIndex]);
+      console.log("✅ Transaction After Update:", updatedReceiver);
     
-      // ✅ Find and update the payer’s existing transaction (instead of pushing a duplicate)
-      const payerTransactionIndex = payer.transactions.findIndex(tx => tx.qrCode === qrCode);
-      if (payerTransactionIndex !== -1) {
-        payer.transactions[payerTransactionIndex].status = "completed";
-      } else {
-        payer.transactions.push({
-          amount: transaction.amount,
-          type: "debit",
-          status: "completed",
-          date: new Date(),
-          description: `Sent $${transaction.amount} to ${receiver.username}`
-        });
-      }
+      // ✅ Save payer's transaction history
+      payer.transactions.push({
+        amount: transaction.amount,
+        type: "debit",
+        status: "completed",
+        date: new Date(),
+        description: `Sent $${transaction.amount} to ${receiver.username}`
+      });
     
-      // ✅ Save changes to DB
       await payer.save();
       await receiver.save();
     
-      console.log("✅ QR Transaction Completed:", receiver.transactions);
+      if (updatedReceiver) {
+        console.log("✅ QR Transaction Completed:", updatedReceiver.transactions);
+      } else {
+        console.error("❌ Failed to update transaction: Receiver not found");
+      }
     
       return {
         id: receiver._id.toString(),
@@ -425,6 +452,7 @@ const resolvers = {
         transactionStatus: "completed",
       };
     },
+    
          
     
     lockWallet: async (
