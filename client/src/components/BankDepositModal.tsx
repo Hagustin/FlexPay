@@ -1,20 +1,64 @@
 import React, { useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
+import { ADD_FUNDS } from "../graphql/mutations";
+import { GET_WALLET_BALANCE, GET_TRANSACTIONS } from "../graphql/queries";
 
 interface BankDepositModalProps {
   onClose: () => void;
+  userId: string; // Ensure userId is passed
 }
 
-const BankDepositModal: React.FC<BankDepositModalProps> = ({ onClose }) => {
+const BankDepositModal: React.FC<BankDepositModalProps> = ({ onClose, userId }) => {
   const [amount, setAmount] = useState("");
 
-  const handleConfirm = () => {
-    if (!amount || isNaN(parseFloat(amount))) {
-      alert("❌ Please enter a valid amount.");
+  // Apollo Query for Transaction History
+  const { refetch: refetchTransactions } = useQuery(GET_TRANSACTIONS, {
+    variables: { userId, limit: 10, offset: 0 },
+  });
+
+  // Apollo Query for Wallet Balance
+  const { refetch: refetchBalance } = useQuery(GET_WALLET_BALANCE, {
+    variables: { id: userId },
+  });
+
+  // Apollo Mutation for Deposit
+  const [addFunds, { loading, error }] = useMutation(ADD_FUNDS, {
+    refetchQueries: [
+      { query: GET_WALLET_BALANCE, variables: { id: userId } }, // ✅ Ensure wallet updates
+      { query: GET_TRANSACTIONS, variables: { userId, limit: 10, offset: 0 } } // ✅ Ensure transaction history updates
+    ],
+    awaitRefetchQueries: true, // ✅ Wait until both are updated before UI re-renders
+  });
+
+  const handleConfirm = async () => {
+    const depositAmount = parseFloat(amount);
+
+    if (!amount || isNaN(depositAmount) || depositAmount <= 0) {
+      alert("❌ Please enter a valid deposit amount.");
       return;
     }
-    alert(`✅ Bank Deposit of $${amount} Successful!`);
-    setAmount(""); // Reset input
-    onClose(); // Close modal
+
+    try {
+      console.log("🔍 Sending deposit request:", { userId, amount: depositAmount });
+
+      const { data } = await addFunds({
+        variables: { userId, amount: depositAmount },
+      });
+
+      console.log("✅ Deposit Response:", data);
+      alert(`✅ Bank Deposit of $${depositAmount} Successful!`);
+
+      setAmount(""); // Reset input
+
+      // ✅ Manually trigger a refresh for both wallet balance AND transaction history
+      await refetchBalance();
+      await refetchTransactions();
+
+      onClose(); // Close modal
+    } catch (error: any) {
+      console.error("❌ Deposit failed:", error);
+      alert(`❌ Deposit failed: ${error.message}`);
+    }
   };
 
   return (
@@ -34,10 +78,14 @@ const BankDepositModal: React.FC<BankDepositModalProps> = ({ onClose }) => {
         {/* Confirm Button */}
         <button
           onClick={handleConfirm}
+          disabled={loading}
           className="py-3 px-6 bg-green-500 hover:bg-green-600 text-white rounded-full font-inter text-sm tracking-wide"
         >
-          Confirm Deposit
+          {loading ? "Processing..." : "Confirm Deposit"}
         </button>
+
+        {/* Error Message */}
+        {error && <p className="text-red-500 text-sm">{error.message}</p>}
 
         {/* Close Button */}
         <button

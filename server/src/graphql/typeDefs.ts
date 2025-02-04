@@ -21,6 +21,7 @@ const typeDefs = gql`
     balance: Float!
     currency: String!
     transactions: [Transaction]
+    transactionStatus: String
   }
 
   type Transaction {

@@ -111,7 +111,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                           : 'text-yellow-500'
                       }`}
                     >
-                      {txn.status === 'completed' ? 'Completed' : 'Pending'}
+                      {txn.status ? (txn.status === 'completed' ? 'Completed' : 'Pending') : 'Unknown'}
                     </div>
                   </div>
                   <div className="pl-10 font-ivy tracking-widest text-lg">
