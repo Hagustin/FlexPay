@@ -31,6 +31,7 @@ FlexPay is a full-stack fintech application designed to modernize digital paymen
 - Full **GraphQL API** for frontend-backend communication
 - **Vite + React + TypeScript** for frontend
 - **Apollo Server + MongoDB** for backend
+- **AI Chatbot** for FAQs
 
 ---
 
@@ -87,7 +88,7 @@ npm install
 
 ### 3️⃣ Start Development Mode
 ```bash
-npm run dev
+npm run start
 ```
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3001/graphql`
@@ -95,7 +96,7 @@ npm run dev
 ### 4️⃣ Build for Production
 ```bash
 npm run build
-npm start
+npm dev
 ```
 - Backend serves the frontend in **production mode**
 
@@ -115,7 +116,7 @@ password: '1234'
 
 Users will see their starting wallet displayed:
 
-![User Wallet](assets/walletZeroBalance)
+![User Wallet](assets/walletZeroBalance.jpg)
 
 Users can click 'deposit' to open up their camera, which will allow them ro 'receive funds':
 
