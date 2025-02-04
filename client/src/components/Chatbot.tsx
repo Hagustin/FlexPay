@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { useLazyQuery } from "@apollo/client";
-import { X } from "lucide-react";
-import { Banknote, Send, BotMessageSquare } from "lucide-react"; 
-import { ASK_CHATBOT } from "../graphql/queries";
-import AuthService from "../utils/auth";
+import React, { useState } from 'react';
+import { useLazyQuery } from '@apollo/client';
+import { X } from 'lucide-react';
+import { Banknote, Send, BotMessageSquare } from 'lucide-react';
+import { ASK_CHATBOT } from '../graphql/queries';
+import AuthService from '../utils/auth';
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
+  const [question, setQuestion] = useState('');
+  const [response, setResponse] = useState('');
 
   const userProfile = AuthService.getProfile();
-  const userId = userProfile?.id || null; 
+  const userId = userProfile?.id || null;
 
   const [askChatbot, { loading, error }] = useLazyQuery(ASK_CHATBOT, {
     onCompleted: (data) => {
@@ -21,7 +21,9 @@ const Chatbot: React.FC = () => {
 
   const handleAsk = (query: string) => {
     setQuestion(query);
-    const variables = userId ? { userId, question: query } : { question: query };
+    const variables = userId
+      ? { userId, question: query }
+      : { question: query };
     askChatbot({ variables });
   };
 
@@ -39,13 +41,16 @@ const Chatbot: React.FC = () => {
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed bottom-16 right-6 w-96 bg-white border border-gray-300 rounded-xl shadow-xl p-5 flex flex-col transition-all duration-300">
+        <div className="fixed bottom-16 right-6 w-80 bg-white border border-gray-300 rounded-xl shadow-xl p-5 flex flex-col transition-all duration-300">
           <div className="flex justify-between items-center border-b pb-3">
             <h2 className="text-lg font-semibold text-gray-700 flex items-center">
               <BotMessageSquare className="mr-2 text-blue-600" size={20} />
               FlexPay AI Assistant
             </h2>
-            <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-700">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
               <X size={22} />
             </button>
           </div>
@@ -53,7 +58,12 @@ const Chatbot: React.FC = () => {
           {/* Suggested Questions */}
           <div className="mt-3 space-y-2">
             <p className="text-sm text-gray-500">Quick Help:</p>
-            {["How do I add funds?", "How do I withdraw money?", "Where can I use FlexPay?", "How to sign up and log in?"].map((q) => (
+            {[
+              'How do I add funds?',
+              'How do I withdraw money?',
+              'Where can I use FlexPay?',
+              'How to sign up and log in?',
+            ].map((q) => (
               <button
                 key={q}
                 className="w-full text-left bg-gray-200 hover:bg-gray-300 p-3 rounded-md text-sm transition-all duration-300"
@@ -66,7 +76,9 @@ const Chatbot: React.FC = () => {
 
           {/* Chat Response */}
           {loading && <p className="text-blue-500 text-sm mt-3">Thinking...</p>}
-          {error && <p className="text-red-500 text-sm mt-3">Error: {error.message}</p>}
+          {error && (
+            <p className="text-red-500 text-sm mt-3">Error: {error.message}</p>
+          )}
           {response && (
             <div className="mt-3 p-3 bg-gray-100 border rounded-md text-sm text-gray-700">
               {response}
